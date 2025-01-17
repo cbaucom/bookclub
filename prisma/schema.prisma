@@ -1,0 +1,160 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String       @id @default(ulid())
+  clerkId         String       @unique
+  email           String       @unique
+  firstName       String?
+  lastName        String?
+  username        String?      @unique
+  groups          Membership[]
+  notes           Note[]
+  comments        Comment[]
+  invitationsSent Invitation[] @relation("invitationsSent")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  Invitation      Invitation[]
+  ratings         Rating[]
+}
+
+model Group {
+  id          String        @id @default(ulid())
+  name        String
+  description String?
+  privacy     Privacy       @default(PUBLIC)
+  members     Membership[]
+  books       BookInGroup[]
+  invitations Invitation[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Book {
+  id          String        @id @default(ulid())
+  title       String
+  author      String
+  imageUrl    String?
+  amazonUrl   String?
+  description String?
+  groups      BookInGroup[]
+  notes       Note[]
+  comments    Comment[]
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  ratings     Rating[]
+
+  @@unique([title, author])
+}
+
+model Membership {
+  id        String     @id @default(ulid())
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  group     Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId   String
+  role      MemberRole @default(MEMBER)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([userId, groupId])
+}
+
+model BookInGroup {
+  id        String     @id @default(ulid())
+  book      Book       @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  bookId    String
+  group     Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId   String
+  status    BookStatus @default(CURRENT)
+  startDate DateTime?
+  endDate   DateTime?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([bookId, groupId])
+}
+
+model Note {
+  id        String   @id @default(ulid())
+  content   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  bookId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Comment {
+  id        String   @id @default(ulid())
+  content   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  bookId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Invitation {
+  id          String   @id @default(ulid())
+  email       String
+  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId     String
+  invitedBy   User     @relation("invitationsSent", fields: [invitedById], references: [id], onDelete: Cascade)
+  invitedById String
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  User        User?    @relation(fields: [userId], references: [id])
+  userId      String?
+
+  @@unique([email, groupId])
+}
+
+model Rating {
+  id        String   @id @default(ulid())
+  rating    Int
+  review    String?
+  book      Book     @relation(fields: [bookId], references: [id])
+  bookId    String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([bookId, userId])
+  @@index([bookId])
+  @@index([userId])
+}
+
+enum Privacy {
+  PUBLIC
+  PRIVATE
+}
+
+enum MemberRole {
+  ADMIN
+  MEMBER
+}
+
+enum BookStatus {
+  CURRENT
+  PREVIOUS
+  UPCOMING
+}
