@@ -31,6 +31,7 @@ import {
 } from 'react-icons/fa';
 import { BookDescriptionModal } from '@/components/books/book-description-modal';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
+import { DeleteBookDialog } from './delete-book-dialog';
 
 interface CurrentBookProps {
   groupId: string;
@@ -39,8 +40,8 @@ interface CurrentBookProps {
 export function CurrentBook({ groupId }: CurrentBookProps) {
   const { data: book, isLoading } = useCurrentBook(groupId);
   const { rate, ratings } = useRatings(book?.id || '', groupId);
-  const { deleteMutation: deleteBookMutation, finishMutation } =
-    useBookMutations(book?.id || '', groupId);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const { finishMutation } = useBookMutations(book?.id || '', groupId);
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const { isAdmin } = useIsAdmin(groupId);
@@ -146,12 +147,6 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
     }
   };
 
-  const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this book?')) {
-      deleteBookMutation.mutate();
-    }
-  };
-
   return (
     <Container maxW='container.xl' p={0}>
       <Box
@@ -248,6 +243,7 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
                   <Button
                     onClick={handleAmazonClick}
                     colorPalette='orange'
+                    color='white'
                     size='xs'
                     width={{ base: '100%', sm: 'auto' }}
                   >
@@ -271,13 +267,19 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
                     </Button>
                     <Button
                       colorPalette='red'
-                      onClick={handleDelete}
-                      disabled={deleteBookMutation.isPending}
+                      onClick={() => setIsDeleteDialogOpen(true)}
                       width={{ base: '100%', sm: 'auto' }}
                       size='xs'
                     >
                       <FaTrash /> Delete
                     </Button>
+                    <DeleteBookDialog
+                      bookId={book.id}
+                      groupId={groupId}
+                      isOpen={isDeleteDialogOpen}
+                      onClose={() => setIsDeleteDialogOpen(false)}
+                      title={book.title}
+                    />
                   </>
                 )}
               </Flex>

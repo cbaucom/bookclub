@@ -13,13 +13,14 @@ import { useState } from 'react';
 import { AddBookModal } from './add-book-modal';
 import { StarRating } from '@/components/books/star-rating';
 import { useRatings } from '@/hooks/useRatings';
-import { useBookMutations } from '@/hooks/useBookMutations';
-import { FaTrash, FaAmazon } from 'react-icons/fa';
+import { FaTrash, FaAmazon, FaBookOpen } from 'react-icons/fa';
 import { useTheme } from 'next-themes';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useBooks } from '@/hooks/useBooks';
 import { BookWithRatings } from '@/types';
 import { ReviewItem } from '@/components/books/star-rating';
+import { DeleteBookDialog } from './delete-book-dialog';
+
 function BookCard({
   book,
   groupId,
@@ -28,16 +29,10 @@ function BookCard({
   groupId: string;
 }) {
   const { rate, ratings } = useRatings(book.id, groupId);
-  const { deleteMutation } = useBookMutations(book.id, groupId);
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const { isAdmin } = useIsAdmin(groupId);
-
-  const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this book?')) {
-      deleteMutation.mutate();
-    }
-  };
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const handleRate = (rating: number, review?: string) =>
     rate({ rating, review });
@@ -108,16 +103,24 @@ function BookCard({
                   </Text>
                 </VStack>
                 {isAdmin && (
-                  <Button
-                    size='sm'
-                    colorPalette='red'
-                    variant='ghost'
-                    onClick={handleDelete}
-                    disabled={deleteMutation.isPending}
-                    flexShrink={0}
-                  >
-                    <FaTrash />
-                  </Button>
+                  <>
+                    <Button
+                      size='sm'
+                      colorPalette='red'
+                      variant='ghost'
+                      onClick={() => setIsDeleteDialogOpen(true)}
+                      flexShrink={0}
+                    >
+                      <FaTrash />
+                    </Button>
+                    <DeleteBookDialog
+                      bookId={book.id}
+                      groupId={groupId}
+                      isOpen={isDeleteDialogOpen}
+                      onClose={() => setIsDeleteDialogOpen(false)}
+                      title={book.title}
+                    />
+                  </>
                 )}
               </Flex>
 
@@ -240,6 +243,7 @@ export function BookList({ groupId, status }: BookListProps) {
           colorPalette='purple'
           onClick={() => setIsAddBookModalOpen(true)}
         >
+          <FaBookOpen />
           Add Book
         </Button>
       </Flex>

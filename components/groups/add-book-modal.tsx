@@ -7,20 +7,13 @@ import {
   Input,
   VStack,
   Text,
-  DialogTitle,
 } from '@chakra-ui/react';
 import { Button } from '@/components/ui/button';
-import {
-  DialogRoot,
-  DialogBody,
-  DialogCloseTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogBackdrop,
-} from '@/components/ui/dialog';
+import { DialogWrapper } from '@/components/ui/dialog/dialog-wrapper';
 import { toaster } from '@/components/ui/toaster';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { Book } from '@/types';
+import type { Book } from '@prisma/client';
+import { BASE_URL } from '@/lib/constants';
 
 interface AddBookModalProps {
   groupId: string;
@@ -50,7 +43,7 @@ async function addBook(groupId: string, book: Book, status?: string) {
 
   console.log('Sending book data:', bookData);
 
-  const response = await fetch(`/api/groups/${groupId}/books`, {
+  const response = await fetch(`${BASE_URL}/api/groups/${groupId}/books`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -114,81 +107,67 @@ export function AddBookModal({
   };
 
   return (
-    <DialogRoot
-      motionPreset='slide-in-bottom'
-      onOpenChange={onClose}
-      open={isOpen}
-      placement='top'
-    >
-      <DialogBackdrop />
-      <DialogContent mt={4} p={4}>
-        <DialogHeader pb={4}>
-          <DialogTitle fontSize='xl'>Add a Book</DialogTitle>
-          <DialogCloseTrigger />
-        </DialogHeader>
-        <DialogBody>
-          <VStack gap={4}>
-            <Box width='100%'>
-              <Input
-                onChange={handleSearch}
-                placeholder='Search for a book...'
-                px={2}
-                size='lg'
-                type='text'
-                value={searchQuery}
-              />
-            </Box>
+    <DialogWrapper isOpen={isOpen} onClose={onClose} title='Add a Book'>
+      <VStack gap={4}>
+        <Box width='100%'>
+          <Input
+            onChange={handleSearch}
+            placeholder='Search for a book...'
+            px={2}
+            size='lg'
+            type='text'
+            value={searchQuery}
+          />
+        </Box>
 
-            {isLoading && <Text>Searching...</Text>}
+        {isLoading && <Text>Searching...</Text>}
 
-            <VStack gap={4} width='100%'>
-              {books.map((book) => (
-                <Box
-                  key={book.id}
-                  p={4}
-                  borderWidth={1}
-                  borderRadius='md'
-                  _hover={{ borderColor: 'purple.500' }}
-                  width='100%'
-                >
-                  <Flex gap={4}>
-                    {book.imageUrl && (
-                      <Image
-                        src={book.imageUrl}
-                        alt={book.title}
-                        width='60px'
-                        height='90px'
-                        objectFit='cover'
-                        borderRadius='md'
-                      />
-                    )}
-                    <Box flex='1'>
-                      <Heading size='md'>{book.title}</Heading>
-                      <Text color='fg.muted' fontSize='sm'>
-                        by {book.author}
-                      </Text>
-                      {book.description && (
-                        <Text color='fg.muted' fontSize='sm' mt={2}>
-                          {book.description}
-                        </Text>
-                      )}
-                      <Button
-                        colorPalette='purple'
-                        loading={addBookMutation.isPending}
-                        mt={2}
-                        onClick={() => handleAddBook(book)}
-                        size='xs'
-                      >
-                        Add to Group
-                      </Button>
-                    </Box>
-                  </Flex>
+        <VStack gap={4} width='100%'>
+          {books.map((book) => (
+            <Box
+              key={book.id}
+              p={4}
+              borderWidth={1}
+              borderRadius='md'
+              _hover={{ borderColor: 'purple.500' }}
+              width='100%'
+            >
+              <Flex gap={4}>
+                {book.imageUrl && (
+                  <Image
+                    src={book.imageUrl}
+                    alt={book.title}
+                    width='60px'
+                    height='90px'
+                    objectFit='cover'
+                    borderRadius='md'
+                  />
+                )}
+                <Box flex='1'>
+                  <Heading size='md'>{book.title}</Heading>
+                  <Text color='fg.muted' fontSize='sm'>
+                    by {book.author}
+                  </Text>
+                  {book.description && (
+                    <Text color='fg.muted' fontSize='sm' mt={2}>
+                      {book.description}
+                    </Text>
+                  )}
+                  <Button
+                    colorPalette='purple'
+                    loading={addBookMutation.isPending}
+                    mt={2}
+                    onClick={() => handleAddBook(book)}
+                    size='xs'
+                  >
+                    Add to Group
+                  </Button>
                 </Box>
-              ))}
-            </VStack>
-          </VStack>
-        </DialogBody>
-      </DialogContent>
-    </DialogRoot>
+              </Flex>
+            </Box>
+          ))}
+        </VStack>
+      </VStack>
+    </DialogWrapper>
   );
 }

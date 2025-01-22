@@ -1,18 +1,10 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toaster } from '@/components/ui/toaster';
-import { DialogBackdrop, Flex, Input } from '@chakra-ui/react';
+import { Flex, Input } from '@chakra-ui/react';
 import { Button } from '@/components/ui/button';
-import {
-  DialogBody,
-  DialogCloseTrigger,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogRoot,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
+import { DialogWrapper } from '@/components/ui/dialog/dialog-wrapper';
 
 interface InviteModalProps {
   groupId: string;
@@ -70,54 +62,40 @@ export function InviteModal({ groupId, isOpen, onClose }: InviteModalProps) {
     inviteMutation.mutate();
   };
 
+  const footer = (
+    <>
+      <Button variant='ghost' onClick={onClose}>
+        Cancel
+      </Button>
+      <Button
+        colorPalette='blue'
+        type='submit'
+        loading={inviteMutation.isPending}
+      >
+        Send Invitation
+      </Button>
+    </>
+  );
+
   return (
-    <DialogRoot
-      motionPreset='slide-in-bottom'
-      open={isOpen}
-      onOpenChange={onClose}
-      placement='center'
+    <DialogWrapper
+      isOpen={isOpen}
+      onClose={onClose}
+      title='Invite Member'
+      footer={footer}
     >
-      <DialogBackdrop />
-      <DialogContent mt={4} p={4}>
-        <Flex
-          as='form'
-          flexDirection='column'
-          gap={4}
-          onSubmit={handleSubmit}
-          p={4}
-        >
-          <DialogHeader>
-            <DialogTitle pb={4} fontSize='xl'>
-              Invite Member
-            </DialogTitle>
-            <DialogCloseTrigger />
-          </DialogHeader>
-          <DialogBody>
-            <Field label='Email address' invalid={false}>
-              <Input
-                padding={2}
-                type='email'
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder='Enter email address'
-                required
-              />
-            </Field>
-          </DialogBody>
-          <DialogFooter>
-            <Button variant='ghost' onClick={onClose}>
-              Cancel
-            </Button>
-            <Button
-              colorPalette='blue'
-              type='submit'
-              loading={inviteMutation.isPending}
-            >
-              Send Invitation
-            </Button>
-          </DialogFooter>
-        </Flex>
-      </DialogContent>
-    </DialogRoot>
+      <Flex as='form' flexDirection='column' gap={4} onSubmit={handleSubmit}>
+        <Field label='Email address' invalid={false}>
+          <Input
+            padding={2}
+            type='email'
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder='Enter email address'
+            required
+          />
+        </Field>
+      </Flex>
+    </DialogWrapper>
   );
 }

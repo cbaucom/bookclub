@@ -6,15 +6,8 @@ import {
   Text,
   Textarea,
 } from '@chakra-ui/react';
-import {
-  DialogRoot,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogBody,
-} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { DialogWrapper } from '@/components/ui/dialog/dialog-wrapper';
 import { FaStar } from 'react-icons/fa';
 import { type ReactElement, useState } from 'react';
 import { useTheme } from 'next-themes';
@@ -120,6 +113,23 @@ export function StarRating({
     setTempRating(null);
   };
 
+  const footer = (
+    <>
+      <Button
+        colorPalette='purple'
+        onClick={handleSubmit}
+        size='xs'
+        mr={3}
+        disabled={!selectedRating}
+      >
+        Submit{review ? ' with Review' : ''}
+      </Button>
+      <Button variant='ghost' onClick={handleClose}>
+        Cancel
+      </Button>
+    </>
+  );
+
   return (
     <Box>
       <HStack gap={1} align='center'>
@@ -160,76 +170,59 @@ export function StarRating({
       )}
 
       {isModalOpen && (
-        <DialogRoot open={isModalOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {userRating ? 'Change Review' : 'Add Review'}
-              </DialogTitle>
-            </DialogHeader>
-            <DialogBody>
-              <HStack gap={1} mb={4} justify='center'>
-                {[1, 2, 3, 4, 5].map((rating) => (
-                  <IconButton
-                    key={rating}
-                    aria-label={`Rate ${rating} stars`}
-                    bg='transparent'
-                    color={
-                      rating <=
-                      (tempRating || selectedRating || userRating || 0)
-                        ? 'yellow.400'
-                        : isDark
-                          ? 'gray.600'
-                          : 'gray.200'
-                    }
-                    minW={0}
-                    onClick={() => setSelectedRating(rating)}
-                    onMouseEnter={() => setTempRating(rating)}
-                    onMouseLeave={() => setTempRating(null)}
-                    size='lg'
-                    variant='ghost'
-                    _hover={{
-                      bg: 'transparent',
-                      color: 'yellow.500',
-                    }}
-                  >
-                    <FaStar size={iconSizes.lg * 4} />
-                  </IconButton>
-                ))}
-              </HStack>
-              <Textarea
-                placeholder='Write your review (optional)'
-                value={review}
-                onChange={(e) => setReview(e.target.value)}
-                size='md'
-                rows={4}
-                bg={isDark ? 'gray.800' : 'white'}
-                borderColor={isDark ? 'gray.600' : 'gray.200'}
+        <DialogWrapper
+          isOpen={isModalOpen}
+          onClose={handleClose}
+          title={userRating ? 'Change Review' : 'Add Review'}
+          footer={footer}
+        >
+          <HStack gap={1} mb={4} justify='center'>
+            {[1, 2, 3, 4, 5].map((rating) => (
+              <IconButton
+                key={rating}
+                aria-label={`Rate ${rating} stars`}
+                bg='transparent'
+                color={
+                  rating <= (tempRating || selectedRating || userRating || 0)
+                    ? 'yellow.400'
+                    : isDark
+                      ? 'gray.600'
+                      : 'gray.200'
+                }
+                minW={0}
+                onClick={() => setSelectedRating(rating)}
+                onMouseEnter={() => setTempRating(rating)}
+                onMouseLeave={() => setTempRating(null)}
+                size='lg'
+                variant='ghost'
                 _hover={{
-                  borderColor: isDark ? 'gray.500' : 'gray.300',
+                  bg: 'transparent',
+                  color: 'yellow.500',
                 }}
-                _focus={{
-                  borderColor: 'blue.500',
-                  boxShadow: `0 0 0 1px ${isDark ? 'blue.500' : 'blue.500'}`,
-                }}
-              />
-            </DialogBody>
-            <DialogFooter>
-              <Button
-                colorScheme='blue'
-                onClick={handleSubmit}
-                size='md'
-                mr={3}
-                disabled={!selectedRating}
               >
-                Submit{review ? ' with Review' : ''}
-              </Button>
-              <Button variant='ghost' onClick={handleClose}>
-                Cancel
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </DialogRoot>
+                <FaStar size={iconSizes.lg * 4} />
+              </IconButton>
+            ))}
+          </HStack>
+          <Textarea
+            bg={isDark ? 'gray.800' : 'white'}
+            borderColor={isDark ? 'gray.600' : 'gray.200'}
+            mb={4}
+            p={2}
+            onChange={(e) => setReview(e.target.value)}
+            placeholder='Write your review (optional)'
+            rows={4}
+            size='md'
+            value={review}
+            _hover={{
+              borderColor: isDark ? 'gray.500' : 'gray.300',
+            }}
+            _focus={{
+              borderColor: 'purple.500',
+              boxShadow: `0 0 0 1px ${isDark ? 'purple.500' : 'purple.500'}`,
+            }}
+          />
+        </DialogWrapper>
       )}
     </Box>
   );

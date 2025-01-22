@@ -1,13 +1,7 @@
 import { type ReactElement } from 'react';
-import {
-  DialogBackdrop,
-  DialogBody,
-  DialogCloseTrigger,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogRoot,
-} from '@/components/ui/dialog';
+import { DialogDescription } from '@/components/ui/dialog';
+import { DialogWrapper } from '@/components/ui/dialog/dialog-wrapper';
+import { Button } from '@/components/ui/button';
 
 interface BookDescriptionModalProps {
   isOpen: boolean;
@@ -23,23 +17,18 @@ export function BookDescriptionModal({
   description,
 }: BookDescriptionModalProps): ReactElement {
   return (
-    <DialogRoot
-      motionPreset='slide-in-bottom'
-      open={isOpen}
-      onOpenChange={onClose}
-      placement='top'
+    <DialogWrapper
+      footer={
+        <Button variant='ghost' onClick={onClose}>
+          Close
+        </Button>
+      }
+      isOpen={isOpen}
+      onClose={onClose}
+      placement='center'
+      title={title}
     >
-      <DialogBackdrop />
-      <DialogContent mt={4} p={4}>
-        <DialogHeader pb={4}>{title}</DialogHeader>
-
-        <DialogCloseTrigger />
-        <DialogBody>
-          <DialogDescription className='mt-4 max-h-[60vh] overflow-y-auto whitespace-pre-wrap'>
-            {description}
-          </DialogDescription>
-        </DialogBody>
-      </DialogContent>
-    </DialogRoot>
+      <DialogDescription py={2}>{description}</DialogDescription>
+    </DialogWrapper>
   );
 }
