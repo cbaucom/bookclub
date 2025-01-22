@@ -41,3 +41,26 @@ export async function getAuthenticatedUser() {
 
 	return dbUser;
 }
+
+export async function checkGroupMembership(userId: string, groupId: string) {
+	const membership = await prisma.membership.findFirst({
+		where: {
+			userId,
+			groupId,
+		},
+	});
+
+	return membership;
+}
+
+export async function checkGroupAdmin(userId: string, groupId: string) {
+	const membership = await prisma.membership.findFirst({
+		where: {
+			userId,
+			groupId,
+			role: 'ADMIN',
+		},
+	});
+
+	return membership;
+}

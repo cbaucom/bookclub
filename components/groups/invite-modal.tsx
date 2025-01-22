@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toaster } from '@/components/ui/toaster';
-import { Flex, Input } from '@chakra-ui/react';
+import { DialogBackdrop, Flex, Input } from '@chakra-ui/react';
 import { Button } from '@/components/ui/button';
 import {
   DialogBody,
@@ -71,8 +71,14 @@ export function InviteModal({ groupId, isOpen, onClose }: InviteModalProps) {
   };
 
   return (
-    <DialogRoot open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+    <DialogRoot
+      motionPreset='slide-in-bottom'
+      open={isOpen}
+      onOpenChange={onClose}
+      placement='center'
+    >
+      <DialogBackdrop />
+      <DialogContent mt={4} p={4}>
         <Flex
           as='form'
           flexDirection='column'
@@ -81,7 +87,9 @@ export function InviteModal({ groupId, isOpen, onClose }: InviteModalProps) {
           p={4}
         >
           <DialogHeader>
-            <DialogTitle>Invite Member</DialogTitle>
+            <DialogTitle pb={4} fontSize='xl'>
+              Invite Member
+            </DialogTitle>
             <DialogCloseTrigger />
           </DialogHeader>
           <DialogBody>

@@ -1,31 +1,42 @@
-import { Group, MemberRole, Book } from '@prisma/client';
+import { Book, Note, Group, User } from '@prisma/client';
 
-export type { Book };
+export interface GroupWithRole extends Group {
+	role: string;
+}
 
-export type GroupWithRole = Group & {
-	role: MemberRole;
-};
+export interface NoteWithUser extends Note {
+	user: User;
+}
 
-export interface BookWithRatings extends Book {
+export interface BookWithRatings extends Omit<Book, 'startDate' | 'endDate'> {
 	averageRating?: number | null;
 	totalRatings?: number;
 	userRating?: number | null;
-}
-
-interface GoogleBooksVolumeInfo {
-	title: string;
-	authors?: string[];
-	description?: string;
-	imageLinks?: {
-		thumbnail?: string;
-	};
-}
-
-interface GoogleBooksItem {
-	id: string;
-	volumeInfo: GoogleBooksVolumeInfo;
+	status?: string;
+	startDate?: Date | null;
+	endDate?: Date | null;
+	notes?: NoteWithUser[];
 }
 
 export interface GoogleBooksResponse {
-	items: GoogleBooksItem[];
+	items?: Array<{
+		id: string;
+		volumeInfo: {
+			title: string;
+			authors?: string[];
+			description?: string;
+			imageLinks?: {
+				thumbnail?: string;
+			};
+		};
+	}>;
+}
+
+export interface SearchBook {
+	id: string;
+	title: string;
+	author: string;
+	description?: string;
+	imageUrl?: string;
+	amazonUrl?: string;
 }

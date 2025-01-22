@@ -1,59 +1,21 @@
-import { useQuery } from '@tanstack/react-query';
 import { Box, Flex, Grid, Heading, Text } from '@chakra-ui/react';
-import { Membership } from '@prisma/client';
-import { BASE_URL } from '@/lib/constants';
 import { PageState } from '@/components/ui/page-state';
-import { useAuth } from '@clerk/nextjs';
 import { useState } from 'react';
 import { InviteModal } from './invite-modal';
 import { Button } from '@/components/ui/button';
-
-interface MembershipWithUser extends Membership {
-  user: {
-    id: string;
-    clerkId: string;
-    firstName: string | null;
-    lastName: string | null;
-    email: string;
-  };
-}
-
-async function fetchMembers(groupId: string): Promise<MembershipWithUser[]> {
-  const response = await fetch(`${BASE_URL}/api/groups/${groupId}/members`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch members');
-  }
-  return response.json();
-}
+import { randomColor } from '@/lib/utils';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 
 interface MemberListProps {
   groupId: string;
 }
 
 export function MemberList({ groupId }: MemberListProps) {
-  const {
-    data: members,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ['members', groupId],
-    queryFn: () => fetchMembers(groupId),
-  });
-
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-  const { userId } = useAuth();
-
-  const userRole = members?.find(
-    (member) => member.user.clerkId === userId
-  )?.role;
-  const canInvite = userRole === 'ADMIN';
+  const { isAdmin, isLoading, members } = useIsAdmin(groupId);
 
   if (isLoading) {
     return <PageState isLoading />;
-  }
-
-  if (error) {
-    return <PageState isError error={error as Error} />;
   }
 
   if (!members?.length) {
@@ -70,9 +32,9 @@ export function MemberList({ groupId }: MemberListProps) {
         <Heading as='h3' size='md'>
           Members ({members.length})
         </Heading>
-        {canInvite && (
+        {isAdmin && (
           <Button
-            colorPalette='blue'
+            colorPalette='purple'
             onClick={() => setIsInviteModalOpen(true)}
           >
             Invite Members
@@ -82,16 +44,10 @@ export function MemberList({ groupId }: MemberListProps) {
 
       <Grid templateColumns='1fr' gap={4}>
         {members.map((member) => (
-          <Box
-            key={member.id}
-            p={4}
-            borderWidth='1px'
-            borderRadius='lg'
-            _hover={{ bg: 'purple.50' }}
-          >
+          <Box key={member.id} p={4} borderWidth='1px' borderRadius='lg'>
             <Flex gap={4} align='center'>
               <Box
-                bg='blue.500'
+                bg={randomColor()}
                 borderRadius='full'
                 color='white'
                 fontSize='lg'
@@ -108,19 +64,19 @@ export function MemberList({ groupId }: MemberListProps) {
                 <Text fontWeight='bold'>
                   {member.user.firstName} {member.user.lastName}
                 </Text>
-                <Text fontSize='sm' color='gray.600'>
+                <Text fontSize='sm' color='fg.muted'>
                   {member.user.email}
                 </Text>
               </Box>
               <Box>
                 <Text
                   fontSize='sm'
-                  color={member.role === 'ADMIN' ? 'blue.500' : 'gray.500'}
+                  color={member.role === 'ADMIN' ? 'red.500' : 'fg.muted'}
                   fontWeight='medium'
                 >
                   {member.role}
                 </Text>
-                <Text fontSize='xs' color='gray.500'>
+                <Text fontSize='xs' color='fg.muted'>
                   Joined {new Date(member.createdAt).toLocaleDateString()}
                 </Text>
               </Box>

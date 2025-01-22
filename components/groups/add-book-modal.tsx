@@ -7,6 +7,7 @@ import {
   Input,
   VStack,
   Text,
+  DialogTitle,
 } from '@chakra-ui/react';
 import { Button } from '@/components/ui/button';
 import {
@@ -121,8 +122,10 @@ export function AddBookModal({
     >
       <DialogBackdrop />
       <DialogContent mt={4} p={4}>
-        <DialogHeader pb={4}>Add a Book</DialogHeader>
-        <DialogCloseTrigger />
+        <DialogHeader pb={4}>
+          <DialogTitle fontSize='xl'>Add a Book</DialogTitle>
+          <DialogCloseTrigger />
+        </DialogHeader>
         <DialogBody>
           <VStack gap={4}>
             <Box width='100%'>
@@ -130,6 +133,8 @@ export function AddBookModal({
                 onChange={handleSearch}
                 placeholder='Search for a book...'
                 px={2}
+                size='lg'
+                type='text'
                 value={searchQuery}
               />
             </Box>
@@ -158,21 +163,21 @@ export function AddBookModal({
                       />
                     )}
                     <Box flex='1'>
-                      <Heading size='sm'>{book.title}</Heading>
-                      <Text color='gray.600' fontSize='sm'>
+                      <Heading size='md'>{book.title}</Heading>
+                      <Text color='fg.muted' fontSize='sm'>
                         by {book.author}
                       </Text>
                       {book.description && (
-                        <Text color='gray.600' fontSize='sm' mt={2}>
+                        <Text color='fg.muted' fontSize='sm' mt={2}>
                           {book.description}
                         </Text>
                       )}
                       <Button
-                        colorPalette='blue'
+                        colorPalette='purple'
                         loading={addBookMutation.isPending}
                         mt={2}
                         onClick={() => handleAddBook(book)}
-                        size='sm'
+                        size='xs'
                       >
                         Add to Group
                       </Button>

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getAuthenticatedUser } from '@/lib/auth';
+import { getAuthenticatedUser, checkGroupMembership } from '@/lib/auth';
 import { BookStatus } from '@prisma/client';
 
 export async function GET(
@@ -30,12 +30,7 @@ export async function GET(
 		}
 
 		// Check if user is a member of the group
-		const membership = await prisma.membership.findFirst({
-			where: {
-				userId: user.id,
-				groupId,
-			},
-		});
+		const membership = await checkGroupMembership(user.id, groupId);
 
 		if (!membership) {
 			return NextResponse.json(
@@ -131,14 +126,7 @@ export async function POST(
 		}
 
 		// Check if user is a member of the group
-		const membership = await prisma.membership.findUnique({
-			where: {
-				userId_groupId: {
-					userId: user.id,
-					groupId,
-				},
-			},
-		});
+		const membership = await checkGroupMembership(user.id, groupId);
 
 		if (!membership) {
 			return NextResponse.json(

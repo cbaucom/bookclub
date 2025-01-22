@@ -1,76 +1,51 @@
 import {
   Box,
+  Container,
   Flex,
+  Grid,
   Heading,
   Image,
   Stack,
   Text,
   Textarea,
-  HStack,
+  VStack,
 } from '@chakra-ui/react';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
-import { useCurrentBook } from '@/hooks/useCurrentBook';
+import { useCurrentBook } from '@/hooks/useBooks';
 import { useNotes } from '@/hooks/useNotes';
 import { useNoteMutations } from '@/hooks/useNoteMutations';
 import { useState } from 'react';
 import { AddBookModal } from './add-book-modal';
 import { PageState } from '@/components/ui/page-state';
-import { useUser } from '@clerk/nextjs';
-import { useQuery } from '@tanstack/react-query';
-import { StarRating } from '@/components/books/star-rating';
+import { ReviewItem, StarRating } from '@/components/books/star-rating';
 import { useRatings } from '@/hooks/useRatings';
 import { useBookMutations } from '@/hooks/useBookMutations';
-import { FaStar } from 'react-icons/fa';
+import {
+  FaCheck,
+  FaAmazon,
+  FaTrash,
+  FaEdit,
+  FaSave,
+  FaTimes,
+} from 'react-icons/fa';
 import { BookDescriptionModal } from '@/components/books/book-description-modal';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 
 interface CurrentBookProps {
   groupId: string;
 }
 
-function ReviewItem({
-  review,
-}: {
-  review: {
-    rating: number;
-    review?: string | null;
-    user: { firstName: string | null; lastName: string | null };
-  };
-}) {
-  return (
-    <Box p={3} borderWidth={1} borderRadius='md' bg='gray.50'>
-      <Flex align='center' gap={2}>
-        <Text fontWeight='medium'>
-          {review.user.firstName} {review.user.lastName}
-        </Text>
-        <HStack gap={1}>
-          {[...Array(5)].map((_, i) => (
-            <Box key={i} color={i < review.rating ? 'yellow.400' : 'gray.200'}>
-              <FaStar size={12} />
-            </Box>
-          ))}
-        </HStack>
-      </Flex>
-      {review.review && (
-        <Text mt={2} fontSize='sm'>
-          {review.review}
-        </Text>
-      )}
-    </Box>
-  );
-}
-
-async function fetchUser() {
-  const response = await fetch('/api/protected');
-  if (!response.ok) {
-    throw new Error('Failed to fetch user');
-  }
-  return response.json();
-}
-
 export function CurrentBook({ groupId }: CurrentBookProps) {
-  const { data: book, isLoading, error } = useCurrentBook(groupId);
-  const [isAddBookModalOpen, setIsAddBookModalOpen] = useState(false);
+  const { data: book, isLoading } = useCurrentBook(groupId);
+  const { rate, ratings } = useRatings(book?.id || '', groupId);
+  const { deleteMutation: deleteBookMutation, finishMutation } =
+    useBookMutations(book?.id || '', groupId);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const { isAdmin } = useIsAdmin(groupId);
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
+  const [isAddBookModalOpen, setIsAddBookModalOpen] = useState(false);
   const [noteContent, setNoteContent] = useState('');
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editingNoteContent, setEditingNoteContent] = useState('');
@@ -79,40 +54,9 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
     book?.id || '',
     groupId
   );
-  const { isSignedIn, isLoaded } = useUser();
-  const { data: user } = useQuery({
-    queryKey: ['user'],
-    queryFn: fetchUser,
-    enabled: isLoaded && isSignedIn,
-  });
-  const { rate, ratings } = useRatings(book?.id || '', groupId);
-  const { deleteMutation: deleteBookMutation, finishMutation } =
-    useBookMutations(book?.id || '', groupId);
-
-  const handleRate = (rating: number, review?: string) => {
-    rate({ rating, review });
-  };
-
-  const handleFinish = () => {
-    if (
-      window.confirm('Are you sure you want to mark this book as finished?')
-    ) {
-      finishMutation.mutate();
-    }
-  };
-
-  const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this book?')) {
-      deleteBookMutation.mutate();
-    }
-  };
 
   if (isLoading) {
     return <PageState isLoading />;
-  }
-
-  if (error) {
-    return <PageState isError error={error as Error} />;
   }
 
   if (!book) {
@@ -136,6 +80,17 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
     );
   }
 
+  const handleRate = (rating: number, review?: string) =>
+    rate({ rating, review });
+
+  const handleFinish = () => {
+    if (
+      window.confirm('Are you sure you want to mark this book as finished?')
+    ) {
+      finishMutation.mutate();
+    }
+  };
+
   const handleAmazonClick = () => {
     if (book.amazonUrl) {
       window.open(book.amazonUrl, '_blank', 'noopener,noreferrer');
@@ -156,7 +111,7 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
   };
 
   const handleEditNote = (noteId: string) => {
-    const note = book.notes.find((n) => n.id === noteId);
+    const note = book.notes?.find((n) => n.id === noteId);
     if (note) {
       setEditingNoteId(noteId);
       setEditingNoteContent(note.content);
@@ -191,220 +146,272 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
     }
   };
 
+  const handleDelete = () => {
+    if (window.confirm('Are you sure you want to delete this book?')) {
+      deleteBookMutation.mutate();
+    }
+  };
+
   return (
-    <Box borderWidth='1px' borderRadius='lg' overflow='hidden'>
-      <Box p={6}>
-        <Flex gap={6}>
-          {book.imageUrl && (
-            <Image
-              src={book.imageUrl}
-              alt={book.title}
-              borderRadius='lg'
-              width='150px'
-              height='225px'
-              objectFit='cover'
-            />
-          )}
-          <Box flex={1}>
-            <Flex justify='space-between' align='flex-start'>
-              <Box>
-                <Heading as='h2' size='xl'>
-                  {book.title}
-                </Heading>
-                <Text fontSize='lg' mt={2}>
-                  by {book.author}
-                </Text>
-              </Box>
-              <HStack>
-                <Button
-                  colorPalette='green'
-                  onClick={handleFinish}
-                  loading={finishMutation.isPending}
-                >
-                  Mark as Finished
-                </Button>
-                <Button
-                  colorPalette='red'
-                  onClick={handleDelete}
-                  loading={deleteBookMutation.isPending}
-                >
-                  Delete
-                </Button>
-              </HStack>
-            </Flex>
-            {book.description && (
-              <Text mt={4} color='fg.muted'>
-                {book.description.length > 200 ? (
-                  <>
-                    {book.description.slice(0, 200)}...{' '}
-                    <Button
-                      variant='ghost'
-                      colorPalette='blue'
-                      onClick={() => setIsDescriptionOpen(true)}
-                      size='sm'
-                    >
-                      Read more
-                    </Button>
-                    <BookDescriptionModal
-                      isOpen={isDescriptionOpen}
-                      onClose={() => setIsDescriptionOpen(false)}
-                      title={book.title}
-                      description={book.description}
-                    />
-                  </>
-                ) : (
-                  book.description
-                )}
-              </Text>
-            )}
-            <Box mt={4}>
-              <StarRating
-                averageRating={book.averageRating}
-                onRate={handleRate}
-                size='lg'
-                totalRatings={book.totalRatings}
-                userRating={book.userRating}
-              />
-            </Box>
-            {book.amazonUrl && (
-              <Button
-                onClick={handleAmazonClick}
-                mt={4}
-                colorPalette='orange'
-                padding={4}
-                size='xs'
+    <Container maxW='container.xl' p={0}>
+      <Box
+        bg={isDark ? 'gray.800' : 'white'}
+        borderRadius='xl'
+        boxShadow='lg'
+        overflow='hidden'
+        p={{ base: 4, md: 8 }}
+      >
+        <Grid
+          templateColumns={{ base: '1fr', md: '350px 1fr' }}
+          gap={{ base: 6, md: 8 }}
+        >
+          {/* Left Column - Book Details */}
+          <VStack align='stretch' gap={6}>
+            {book.imageUrl && (
+              <Box
+                borderRadius='lg'
+                overflow='hidden'
+                boxShadow='md'
+                bg={isDark ? 'gray.700' : 'gray.100'}
+                p={4}
               >
-                View on Amazon
-              </Button>
+                <Image
+                  src={book.imageUrl}
+                  alt={book.title}
+                  width='100%'
+                  height='auto'
+                  objectFit='cover'
+                  borderRadius='md'
+                />
+              </Box>
             )}
+            <VStack align={{ base: 'center', md: 'stretch' }} gap={4}>
+              <Heading
+                as='h1'
+                size='xl'
+                letterSpacing='tight'
+                textAlign={{ base: 'center', md: 'left' }}
+              >
+                {book.title}
+              </Heading>
+              <Text
+                fontSize='xl'
+                color={isDark ? 'gray.400' : 'gray.600'}
+                textAlign={{ base: 'center', md: 'left' }}
+              >
+                by {book.author}
+              </Text>
+              {book.description && (
+                <Box>
+                  <Text
+                    color={isDark ? 'gray.300' : 'gray.700'}
+                    fontSize='md'
+                    lineHeight='tall'
+                    textAlign={{ base: 'center', md: 'left' }}
+                  >
+                    {book.description.length > 200 ? (
+                      <>
+                        {book.description.slice(0, 200)}...{' '}
+                        <Button
+                          variant='ghost'
+                          colorPalette='blue'
+                          onClick={() => setIsDescriptionOpen(true)}
+                          size='sm'
+                        >
+                          Read more
+                        </Button>
+                      </>
+                    ) : (
+                      book.description
+                    )}
+                  </Text>
+                </Box>
+              )}
+
+              <Box width='100%'>
+                <StarRating
+                  averageRating={book.averageRating}
+                  onRate={handleRate}
+                  size='lg'
+                  totalRatings={book.totalRatings}
+                  userRating={book.userRating}
+                />
+              </Box>
+
+              <Flex
+                gap={4}
+                mt={4}
+                direction={{ base: 'column', sm: 'row' }}
+                width='100%'
+              >
+                {book.amazonUrl && (
+                  <Button
+                    onClick={handleAmazonClick}
+                    colorPalette='orange'
+                    size='xs'
+                    width={{ base: '100%', sm: 'auto' }}
+                  >
+                    <FaAmazon /> View on Amazon
+                  </Button>
+                )}
+                {isAdmin && (
+                  <>
+                    <Button
+                      onClick={handleFinish}
+                      colorPalette='purple'
+                      size='xs'
+                      width={{ base: '100%', sm: 'auto' }}
+                      disabled={finishMutation.isPending}
+                    >
+                      {' '}
+                      <FaCheck />
+                      {finishMutation.isPending
+                        ? 'Marking as finished...'
+                        : 'Mark as Finished'}
+                    </Button>
+                    <Button
+                      colorPalette='red'
+                      onClick={handleDelete}
+                      disabled={deleteBookMutation.isPending}
+                      width={{ base: '100%', sm: 'auto' }}
+                      size='xs'
+                    >
+                      <FaTrash /> Delete
+                    </Button>
+                  </>
+                )}
+              </Flex>
+            </VStack>
+          </VStack>
+
+          {/* Right Column - Notes and Reviews */}
+          <VStack align='stretch' gap={8}>
+            {/* Notes Section */}
+            <Box>
+              <Heading as='h2' size='lg' mb={4}>
+                Notes
+              </Heading>
+              <VStack align='stretch' gap={4}>
+                <Box>
+                  <Textarea
+                    value={noteContent}
+                    onChange={(e) => setNoteContent(e.target.value)}
+                    placeholder='Add a note...'
+                    p={4}
+                    rows={3}
+                  />
+                  <Button
+                    mt={2}
+                    colorPalette='purple'
+                    onClick={handleAddNote}
+                    disabled={createMutation.isPending || !noteContent.trim()}
+                    size='xs'
+                  >
+                    {createMutation.isPending ? 'Adding...' : 'Add Note'}
+                  </Button>
+                </Box>
+
+                {book.notes?.map((note) => (
+                  <Box
+                    key={note.id}
+                    p={4}
+                    borderWidth={1}
+                    borderRadius='lg'
+                    bg={isDark ? 'gray.700' : 'gray.50'}
+                  >
+                    {editingNoteId === note.id ? (
+                      <Box>
+                        <Textarea
+                          value={editingNoteContent}
+                          onChange={(e) =>
+                            setEditingNoteContent(e.target.value)
+                          }
+                          rows={3}
+                          p={4}
+                        />
+                        <Flex gap={2} mt={2}>
+                          <Button
+                            colorPalette='green'
+                            onClick={handleSaveEdit}
+                            disabled={updateMutation.isPending}
+                            size='xs'
+                          >
+                            <FaSave /> Save
+                          </Button>
+                          <Button
+                            colorPalette='gray'
+                            onClick={handleCancelEdit}
+                            size='xs'
+                          >
+                            <FaTimes /> Cancel
+                          </Button>
+                        </Flex>
+                      </Box>
+                    ) : (
+                      <Box>
+                        <Flex justify='space-between' align='center' mb={2}>
+                          <Text fontWeight='medium'>
+                            {note.user.firstName} {note.user.lastName}
+                          </Text>
+                          <Flex gap={2}>
+                            <Button
+                              size='sm'
+                              colorPalette='blue'
+                              variant='ghost'
+                              onClick={() => handleEditNote(note.id)}
+                            >
+                              <FaEdit />
+                            </Button>
+                            <Button
+                              size='sm'
+                              colorPalette='red'
+                              variant='ghost'
+                              onClick={() => handleDeleteNote(note.id)}
+                              disabled={deleteMutation.isPending}
+                            >
+                              <FaTimes />
+                            </Button>
+                          </Flex>
+                        </Flex>
+                        <Text>{note.content}</Text>
+                        <Text fontSize='xs' color='gray.500' mt={2}>
+                          {new Date(note.createdAt).toLocaleDateString()}
+                        </Text>
+                      </Box>
+                    )}
+                  </Box>
+                ))}
+              </VStack>
+            </Box>
+
+            {/* Reviews Section */}
             {ratings && ratings.length > 0 && (
-              <Box mt={6}>
-                <Heading as='h3' size='md' mb={4}>
+              <Box>
+                <Heading as='h2' size='lg' mb={4}>
                   Reviews
                 </Heading>
-                <Stack gap={3}>
-                  {ratings.map((review) => (
-                    <ReviewItem key={review.id} review={review} />
+                <Stack gap={4}>
+                  {ratings.map((rating) => (
+                    <ReviewItem key={rating.id} review={rating} />
                   ))}
                 </Stack>
               </Box>
             )}
-          </Box>
-        </Flex>
+          </VStack>
+        </Grid>
       </Box>
 
-      <Box p={6}>
-        <Stack direction='column' gap={6}>
-          <Box>
-            <Heading as='h3' size='md' mb={4}>
-              Notes
-            </Heading>
-            {book.notes && book.notes.length === 0 ? (
-              <Text color='gray.600'>No notes yet</Text>
-            ) : (
-              <Stack direction='column' gap={4}>
-                {book.notes &&
-                  book.notes.map((note) => (
-                    <Box
-                      key={note.id}
-                      p={4}
-                      borderWidth='1px'
-                      borderRadius='md'
-                    >
-                      {editingNoteId === note.id ? (
-                        <Box>
-                          <Textarea
-                            padding={4}
-                            value={editingNoteContent}
-                            onChange={(e) =>
-                              setEditingNoteContent(e.target.value)
-                            }
-                          />
-                          <Flex gap={2} mt={2}>
-                            <Button
-                              size='sm'
-                              colorPalette='blue'
-                              onClick={handleSaveEdit}
-                              disabled={updateMutation.isPending}
-                            >
-                              {updateMutation.isPending ? 'Saving...' : 'Save'}
-                            </Button>
-                            <Button
-                              size='sm'
-                              colorPalette='gray'
-                              onClick={handleCancelEdit}
-                            >
-                              Cancel
-                            </Button>
-                          </Flex>
-                        </Box>
-                      ) : (
-                        <>
-                          <Flex justify='space-between' align='center'>
-                            <Flex direction='column'>
-                              <Text>{note.content}</Text>
-                              <Flex gap={4} align='center'>
-                                <Text fontSize='sm' color='fg.muted'>
-                                  {note.user.firstName} {note.user.lastName}
-                                </Text>
-                                <Text fontSize='sm' color='fg.muted'>
-                                  {new Date(
-                                    note.createdAt
-                                  ).toLocaleDateString()}
-                                </Text>
-                              </Flex>
-                            </Flex>
-                            {user && note.userId === user.id && (
-                              <Flex gap={2}>
-                                <Button
-                                  size='sm'
-                                  colorPalette='blue'
-                                  onClick={() => handleEditNote(note.id)}
-                                >
-                                  Edit
-                                </Button>
-                                <Button
-                                  size='sm'
-                                  colorPalette='red'
-                                  onClick={() => handleDeleteNote(note.id)}
-                                  disabled={deleteMutation.isPending}
-                                >
-                                  {deleteMutation.isPending
-                                    ? 'Deleting...'
-                                    : 'Delete'}
-                                </Button>
-                              </Flex>
-                            )}
-                          </Flex>
-                        </>
-                      )}
-                    </Box>
-                  ))}
-              </Stack>
-            )}
-          </Box>
-          <Box>
-            <Heading as='h3' size='md' mb={4}>
-              Add a Note
-            </Heading>
-            <Textarea
-              padding={4}
-              placeholder='Write your thoughts about the book...'
-              value={noteContent}
-              onChange={(e) => setNoteContent(e.target.value)}
-            />
-            <Button
-              mt={4}
-              colorPalette='purple'
-              padding={4}
-              onClick={handleAddNote}
-              disabled={createMutation.isPending}
-            >
-              {createMutation.isPending ? 'Saving...' : 'Save Note'}
-            </Button>
-          </Box>
-        </Stack>
-      </Box>
-    </Box>
+      <BookDescriptionModal
+        isOpen={isDescriptionOpen}
+        onClose={() => setIsDescriptionOpen(false)}
+        title={book.title}
+        description={book.description || ''}
+      />
+      <AddBookModal
+        groupId={groupId}
+        isOpen={isAddBookModalOpen}
+        onClose={() => setIsAddBookModalOpen(false)}
+      />
+    </Container>
   );
 }

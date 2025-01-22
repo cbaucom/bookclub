@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import {
   Box,
   Flex,
@@ -7,55 +6,20 @@ import {
   Image,
   Text,
   Stack,
-  HStack,
+  VStack,
 } from '@chakra-ui/react';
 import { Button } from '@/components/ui/button';
-import { Book } from '@prisma/client';
 import { useState } from 'react';
 import { AddBookModal } from './add-book-modal';
 import { StarRating } from '@/components/books/star-rating';
 import { useRatings } from '@/hooks/useRatings';
 import { useBookMutations } from '@/hooks/useBookMutations';
-import { FaStar } from 'react-icons/fa';
-
-interface BookWithRatings extends Book {
-  averageRating?: number | null;
-  totalRatings?: number;
-  userRating?: number | null;
-}
-
-function ReviewItem({
-  review,
-}: {
-  review: {
-    rating: number;
-    review?: string | null;
-    user: { firstName: string | null; lastName: string | null };
-  };
-}) {
-  return (
-    <Box p={3} borderWidth={1} borderRadius='md' bg='gray.50'>
-      <Flex align='center' gap={2}>
-        <Text fontWeight='medium'>
-          {review.user.firstName} {review.user.lastName}
-        </Text>
-        <HStack gap={1}>
-          {[...Array(5)].map((_, i) => (
-            <Box key={i} color={i < review.rating ? 'yellow.400' : 'gray.200'}>
-              <FaStar size={12} />
-            </Box>
-          ))}
-        </HStack>
-      </Flex>
-      {review.review && (
-        <Text mt={2} fontSize='sm'>
-          {review.review}
-        </Text>
-      )}
-    </Box>
-  );
-}
-
+import { FaTrash, FaAmazon } from 'react-icons/fa';
+import { useTheme } from 'next-themes';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
+import { useBooks } from '@/hooks/useBooks';
+import { BookWithRatings } from '@/types';
+import { ReviewItem } from '@/components/books/star-rating';
 function BookCard({
   book,
   groupId,
@@ -65,6 +29,9 @@ function BookCard({
 }) {
   const { rate, ratings } = useRatings(book.id, groupId);
   const { deleteMutation } = useBookMutations(book.id, groupId);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const { isAdmin } = useIsAdmin(groupId);
 
   const handleDelete = () => {
     if (window.confirm('Are you sure you want to delete this book?')) {
@@ -76,91 +43,148 @@ function BookCard({
     rate({ rating, review });
 
   return (
-    <Box borderWidth='1px' borderRadius='lg' overflow='hidden' p={4}>
-      <Flex gap={4}>
-        {book.imageUrl && (
-          <Image
-            src={book.imageUrl}
-            alt={book.title}
-            width='100px'
-            height='150px'
-            objectFit='cover'
-            borderRadius='md'
-          />
-        )}
-        <Box flex={1}>
-          <Flex justify='space-between' align='flex-start'>
-            <Heading as='h3' size='md'>
-              {book.title}
-            </Heading>
-            <Button
-              size='sm'
-              colorPalette='red'
-              onClick={handleDelete}
-              loading={deleteMutation.isPending}
-            >
-              Delete
-            </Button>
-          </Flex>
-          <Text mt={2}>{book.author}</Text>
-          <Box mt={2}>
-            <StarRating
-              averageRating={book.averageRating}
-              onRate={handleRate}
-              size='sm'
-              totalRatings={book.totalRatings}
-              userRating={book.userRating}
-            />
-          </Box>
-          {book.startDate && (
-            <Text fontSize='sm' color='gray.600' mt={2}>
-              Started: {new Date(book.startDate).toLocaleDateString()}
-            </Text>
-          )}
-          {book.endDate && (
-            <Text fontSize='sm' color='gray.600'>
-              Finished: {new Date(book.endDate).toLocaleDateString()}
-            </Text>
-          )}
-          {book.amazonUrl && (
-            <Button
-              onClick={() =>
-                window.open(book.amazonUrl!, '_blank', 'noopener,noreferrer')
-              }
-              size='sm'
-              mt={2}
-              colorPalette='orange'
-            >
-              View on Amazon
-            </Button>
-          )}
-          {ratings && ratings.length > 0 && (
-            <Box mt={4}>
-              <Heading as='h4' size='sm' mb={2}>
-                Reviews
-              </Heading>
-              <Stack gap={3}>
-                {ratings.map((review) => (
-                  <ReviewItem key={review.id} review={review} />
-                ))}
-              </Stack>
+    <Box
+      borderWidth='1px'
+      borderRadius='lg'
+      bg={isDark ? 'gray.800' : 'white'}
+      boxShadow='sm'
+      _hover={{ boxShadow: 'md' }}
+      transition='all 0.2s'
+      height='100%'
+      display='flex'
+      flexDirection='column'
+    >
+      <Box flex='1' minH={0}>
+        <Grid templateColumns={{ base: '100px 1fr', md: '120px 1fr' }} gap={4}>
+          {book.imageUrl && (
+            <Box position='relative'>
+              <Box
+                position='relative'
+                paddingBottom='150%' // 2:3 aspect ratio
+                width='100%'
+              >
+                <Image
+                  src={book.imageUrl}
+                  alt={book.title}
+                  position='absolute'
+                  top={0}
+                  left={0}
+                  width='100%'
+                  height='100%'
+                  objectFit='cover'
+                  borderRightWidth='1px'
+                  borderColor={isDark ? 'gray.700' : 'gray.100'}
+                />
+              </Box>
             </Box>
           )}
+          <Box p={4} pt={3} display='flex' flexDirection='column' minH={0}>
+            <Flex direction='column' gap={3} flex='1'>
+              <Flex justify='space-between' align='flex-start' gap={2}>
+                <VStack align='flex-start' gap={1} flex={1}>
+                  <Heading
+                    as='h3'
+                    size='md'
+                    maxW='100%'
+                    overflow='hidden'
+                    textOverflow='ellipsis'
+                    css={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                    }}
+                  >
+                    {book.title}
+                  </Heading>
+                  <Text
+                    color={isDark ? 'gray.400' : 'gray.600'}
+                    fontSize='sm'
+                    maxW='100%'
+                    overflow='hidden'
+                    textOverflow='ellipsis'
+                    whiteSpace='nowrap'
+                  >
+                    {book.author}
+                  </Text>
+                </VStack>
+                {isAdmin && (
+                  <Button
+                    size='sm'
+                    colorPalette='red'
+                    variant='ghost'
+                    onClick={handleDelete}
+                    disabled={deleteMutation.isPending}
+                    flexShrink={0}
+                  >
+                    <FaTrash />
+                  </Button>
+                )}
+              </Flex>
+
+              <Box>
+                <StarRating
+                  averageRating={book.averageRating}
+                  onRate={handleRate}
+                  size='sm'
+                  totalRatings={book.totalRatings}
+                  userRating={book.userRating}
+                />
+              </Box>
+
+              <Stack gap={1} mt='auto'>
+                {book.startDate && (
+                  <Text fontSize='xs' color={isDark ? 'gray.400' : 'gray.600'}>
+                    Started: {new Date(book.startDate).toLocaleDateString()}
+                  </Text>
+                )}
+                {book.endDate && (
+                  <Text fontSize='xs' color={isDark ? 'gray.400' : 'gray.600'}>
+                    Finished: {new Date(book.endDate).toLocaleDateString()}
+                  </Text>
+                )}
+              </Stack>
+
+              {book.amazonUrl && (
+                <Button
+                  onClick={() =>
+                    window.open(
+                      book.amazonUrl!,
+                      '_blank',
+                      'noopener,noreferrer'
+                    )
+                  }
+                  size='sm'
+                  colorPalette='orange'
+                  width='fit-content'
+                  mt={2}
+                >
+                  <FaAmazon /> View on Amazon
+                </Button>
+              )}
+            </Flex>
+          </Box>
+        </Grid>
+      </Box>
+
+      {ratings && ratings.length > 0 && (
+        <Box
+          borderTopWidth='1px'
+          borderColor={isDark ? 'gray.700' : 'gray.100'}
+          p={4}
+          bg={isDark ? 'gray.900' : 'gray.50'}
+        >
+          <Heading as='h4' size='sm' mb={2}>
+            Reviews
+          </Heading>
+          <Stack gap={3}>
+            {ratings.map((review) => (
+              <ReviewItem key={review.id} review={review} />
+            ))}
+          </Stack>
         </Box>
-      </Flex>
+      )}
     </Box>
   );
-}
-
-async function fetchBooks(
-  groupId: string,
-  status: string
-): Promise<BookWithRatings[]> {
-  const response = await fetch(`/api/groups/${groupId}/books?status=${status}`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch books');
-  }
-  return response.json();
 }
 
 interface BookListProps {
@@ -170,10 +194,7 @@ interface BookListProps {
 
 export function BookList({ groupId, status }: BookListProps) {
   const [isAddBookModalOpen, setIsAddBookModalOpen] = useState(false);
-  const { data: books, isLoading } = useQuery({
-    queryKey: ['books', groupId, status],
-    queryFn: () => fetchBooks(groupId, status),
-  });
+  const { data: books, isLoading } = useBooks(groupId, status);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -206,7 +227,7 @@ export function BookList({ groupId, status }: BookListProps) {
   }
 
   return (
-    <Box>
+    <Box mt={8}>
       <Flex justify='space-between' align='center' mb={6}>
         <Heading as='h3' size='md'>
           {status === 'PREVIOUS'
@@ -223,14 +244,7 @@ export function BookList({ groupId, status }: BookListProps) {
         </Button>
       </Flex>
 
-      <Grid
-        templateColumns={{
-          base: '1fr',
-          md: 'repeat(2, 1fr)',
-          lg: 'repeat(3, 1fr)',
-        }}
-        gap={6}
-      >
+      <Grid templateColumns={'1fr'} gap={6}>
         {books.map((book) => (
           <BookCard key={book.id} book={book} groupId={groupId} />
         ))}
