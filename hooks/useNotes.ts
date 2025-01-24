@@ -29,7 +29,9 @@ export function useNotes(bookId: string, groupId: string) {
 	const createMutation = useMutation({
 		mutationFn: createNote,
 		onSuccess: () => {
+			// Invalidate all relevant queries
 			queryClient.invalidateQueries({ queryKey: ['currentBook', groupId] });
+			queryClient.invalidateQueries({ queryKey: ['books', groupId] });
 		},
 	});
 

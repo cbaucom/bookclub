@@ -75,6 +75,10 @@ export async function GET(
 
 			return {
 				...bookInGroup.book,
+				subtitle: bookInGroup.book.subtitle,
+				pageCount: bookInGroup.book.pageCount,
+				categories: bookInGroup.book.categories,
+				textSnippet: bookInGroup.book.textSnippet,
 				status: bookInGroup.status,
 				startDate: bookInGroup.startDate,
 				endDate: bookInGroup.endDate,
@@ -116,7 +120,7 @@ export async function POST(
 		const data = await request.json();
 		console.log('Received book data:', data);
 
-		const { title, author, description, imageUrl, amazonUrl, status } = data;
+		const { title, author, description, imageUrl, amazonUrl, status, subtitle, pageCount, categories, textSnippet } = data;
 
 		if (!title || !author) {
 			return NextResponse.json(
@@ -172,6 +176,10 @@ export async function POST(
 				description: description?.trim(),
 				imageUrl: imageUrl || null,
 				amazonUrl: amazonUrl || null,
+				subtitle: subtitle || null,
+				pageCount: pageCount || null,
+				categories: categories || null,
+				textSnippet: textSnippet || null,
 			},
 		});
 
@@ -200,10 +208,14 @@ export async function POST(
 		const response = {
 			id: newBookInGroup.book.id,
 			title: newBookInGroup.book.title,
+			subtitle: newBookInGroup.book.subtitle,
 			author: newBookInGroup.book.author,
 			description: newBookInGroup.book.description,
 			imageUrl: newBookInGroup.book.imageUrl,
 			amazonUrl: newBookInGroup.book.amazonUrl,
+			pageCount: newBookInGroup.book.pageCount,
+			categories: newBookInGroup.book.categories,
+			textSnippet: newBookInGroup.book.textSnippet,
 			startDate: newBookInGroup.startDate,
 			endDate: newBookInGroup.endDate,
 			status: newBookInGroup.status,

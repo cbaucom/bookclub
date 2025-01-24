@@ -43,6 +43,7 @@ export function useNoteMutations(bookId: string, groupId: string) {
 			updateNote(noteId, data),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['currentBook', groupId] });
+			queryClient.invalidateQueries({ queryKey: ['books', groupId] });
 		},
 	});
 
@@ -50,6 +51,7 @@ export function useNoteMutations(bookId: string, groupId: string) {
 		mutationFn: (noteId: string) => deleteNote(noteId),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['currentBook', groupId] });
+			queryClient.invalidateQueries({ queryKey: ['books', groupId] });
 		},
 	});
 

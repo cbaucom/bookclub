@@ -45,10 +45,14 @@ model Group {
 model Book {
   id          String        @id @default(ulid())
   title       String
+  subtitle    String?
   author      String
   imageUrl    String?
   amazonUrl   String?
   description String?
+  pageCount   Int?
+  categories  String?
+  textSnippet String?
   groups      BookInGroup[]
   notes       Note[]
   comments    Comment[]

@@ -8,10 +8,25 @@ import { GroupHeader } from '@/components/groups/group-header';
 import { MemberList } from '@/components/groups/member-list';
 import { useGroup } from '@/hooks/useGroup';
 import { PageState } from '@/components/ui/page-state';
+import { useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function GroupPage() {
+  const queryClient = useQueryClient();
   const { groupId } = useParams();
   const { data: group, isLoading, error } = useGroup(groupId as string);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      queryClient.invalidateQueries(); // Invalidate all queries
+    };
+
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [queryClient]);
 
   if (isLoading) {
     return <PageState isLoading />;

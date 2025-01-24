@@ -38,10 +38,12 @@ async function addBook(groupId: string, book: Book, status?: string) {
     description: book.description || '',
     imageUrl: book.imageUrl || '',
     amazonUrl: book.amazonUrl || '',
+    subtitle: book.subtitle || '',
+    pageCount: book.pageCount || null,
+    categories: book.categories || '',
+    textSnippet: book.textSnippet || '',
     status: status || 'CURRENT',
   };
-
-  console.log('Sending book data:', bookData);
 
   const response = await fetch(`${BASE_URL}/api/groups/${groupId}/books`, {
     method: 'POST',

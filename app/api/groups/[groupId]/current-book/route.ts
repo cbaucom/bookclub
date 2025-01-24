@@ -72,6 +72,10 @@ export async function GET(
 		return NextResponse.json({
 			id: currentBook.book.id,
 			title: currentBook.book.title,
+			subtitle: currentBook.book.subtitle,
+			pageCount: currentBook.book.pageCount,
+			categories: currentBook.book.categories,
+			textSnippet: currentBook.book.textSnippet,
 			author: currentBook.book.author,
 			imageUrl: currentBook.book.imageUrl,
 			amazonUrl: currentBook.book.amazonUrl,
@@ -90,6 +94,7 @@ export async function GET(
 				user: {
 					firstName: note.user.firstName,
 					lastName: note.user.lastName,
+					clerkId: note.user.clerkId,
 				},
 			})),
 		});

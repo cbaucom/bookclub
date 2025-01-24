@@ -16,7 +16,24 @@ export async function GET() {
 			userId: user.id,
 		},
 		include: {
-			group: true,
+			group: {
+				include: {
+					_count: {
+						select: {
+							members: true,
+						},
+					},
+					books: {
+						where: {
+							status: 'CURRENT',
+						},
+						include: {
+							book: true,
+						},
+						take: 1,
+					},
+				},
+			},
 		},
 	});
 
@@ -24,6 +41,8 @@ export async function GET() {
 	const groups = memberships.map((membership) => ({
 		...membership.group,
 		role: membership.role,
+		_count: membership.group._count,
+		currentBook: membership.group.books[0]?.book || null,
 	}));
 
 	return NextResponse.json(groups);

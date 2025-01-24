@@ -68,22 +68,42 @@ export async function POST(
 		});
 
 		// Send invitation email
-		if (process.env.NODE_ENV === 'production') {
-			try {
-				const inviteLink = `${process.env.NEXT_PUBLIC_URL}/invite/${invitation.id}`;
-				await resend.emails.send({
-					from: 'BookClub <noreply@bookclub.com>',
-					to: email,
-					subject: `You've been invited to join ${group.name} on BookClub`,
-					react: renderInvitationEmail({
-						inviterName: user.firstName ? `${user.firstName} ${user.lastName}` : 'Someone',
-						groupName: group.name,
-						inviteLink,
-					}),
-				});
-			} catch (error) {
-				console.error('Failed to send invitation email:', error);
-				// Don't return error, continue with invitation creation
+		try {
+			if (!process.env.NEXT_PUBLIC_URL) {
+				throw new Error('NEXT_PUBLIC_URL environment variable is not set');
+			}
+			const inviteLink = `${process.env.NEXT_PUBLIC_URL}/invite/${invitation.id}`;
+
+			console.log('Attempting to send email with:', {
+				to: email,
+				inviteLink,
+				groupName: group.name,
+				inviterName: user.firstName ? `${user.firstName} ${user.lastName}` : 'Someone',
+			});
+
+			await resend.emails.send({
+				from: 'BookClub <onboarding@resend.dev>',
+				to: email,
+				subject: `You've been invited to join ${group.name} on BookClub`,
+				react: renderInvitationEmail({
+					inviterName: user.firstName ? `${user.firstName} ${user.lastName}` : 'Someone',
+					groupName: group.name,
+					inviteLink,
+				}),
+			});
+
+			console.log('Email sent successfully');
+		} catch (error) {
+			console.error('Failed to send invitation email:', {
+				error: error instanceof Error ? error.message : error,
+				stack: error instanceof Error ? error.stack : undefined,
+			});
+			// Return the error to the client in development
+			if (process.env.NODE_ENV === 'development') {
+				return NextResponse.json(
+					{ error: 'Failed to send invitation email', details: error instanceof Error ? error.message : 'Unknown error' },
+					{ status: 500 }
+				);
 			}
 		}
 

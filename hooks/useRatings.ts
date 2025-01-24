@@ -50,9 +50,22 @@ export function useRatings(bookId: string, groupId: string) {
 	const { mutate: rate, isPending } = useMutation({
 		mutationFn: (data: RatingData) => rateBook(bookId, data),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['books', groupId] });
-			queryClient.invalidateQueries({ queryKey: ['ratings', bookId] });
-			queryClient.invalidateQueries({ queryKey: ['currentBook', groupId] });
+			// Invalidate all book-related queries at once
+			queryClient.invalidateQueries({
+				queryKey: ['books', groupId],
+				refetchType: 'all',
+			});
+			// Invalidate the current book query
+			queryClient.invalidateQueries({
+				queryKey: ['currentBook', groupId],
+				refetchType: 'all',
+			});
+			// Invalidate the specific rating that changed
+			queryClient.invalidateQueries({
+				queryKey: ['ratings', bookId],
+				exact: true,
+				refetchType: 'all',
+			});
 			toaster.create({
 				title: 'Rating saved',
 				type: 'success',

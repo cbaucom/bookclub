@@ -1,0 +1,258 @@
+'use client';
+
+import React from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import {
+  Box,
+  Container,
+  Flex,
+  Grid,
+  Heading,
+  Image,
+  Stack,
+  Text,
+  VStack,
+} from '@chakra-ui/react';
+import { Button } from '@/components/ui/button';
+import { StarRating } from '@/components/books/star-rating';
+import { useRatings } from '@/hooks/useRatings';
+import { FaAmazon, FaArrowLeft } from 'react-icons/fa';
+import { useTheme } from 'next-themes';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
+import { useBook } from '@/hooks/useBook';
+import { PageState } from '@/components/ui/page-state';
+import { EditDatesModal } from '@/components/books/edit-dates-modal';
+import { useState } from 'react';
+
+export default function BookPage() {
+  const router = useRouter();
+  const { groupId, bookId } = useParams();
+  const {
+    data: book,
+    isLoading,
+    error,
+  } = useBook(bookId as string, groupId as string);
+  const { rate, ratings } = useRatings(bookId as string, groupId as string);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const { isAdmin } = useIsAdmin(groupId as string);
+  const [isEditDatesModalOpen, setIsEditDatesModalOpen] = useState(false);
+
+  if (isLoading) {
+    return <PageState isLoading />;
+  }
+
+  if (!book) {
+    return <PageState notFound notFoundMessage='Book not found' />;
+  }
+
+  if (error) {
+    return <PageState isError error={error} />;
+  }
+
+  const handleRate = (rating: number, review?: string) =>
+    rate({ rating, review });
+
+  return (
+    <Container mx='auto' maxW='6xl' px={4} py={8}>
+      <Button
+        onClick={() => router.back()}
+        colorPalette='gray'
+        variant='ghost'
+        mb={6}
+      >
+        <FaArrowLeft className='mr-2' /> Back to Group
+      </Button>
+
+      <Grid templateColumns={{ base: '1fr', md: '300px 1fr' }} gap={8}>
+        <Box>
+          {book.imageUrl && (
+            <Box
+              position='relative'
+              borderRadius='lg'
+              overflow='hidden'
+              boxShadow='md'
+            >
+              <Image
+                src={book.imageUrl}
+                alt={book.title}
+                width='100%'
+                height='auto'
+                objectFit='cover'
+              />
+            </Box>
+          )}
+
+          <VStack mt={4} align='stretch' gap={4}>
+            {book.amazonUrl && (
+              <Button
+                onClick={() =>
+                  window.open(book.amazonUrl!, '_blank', 'noopener,noreferrer')
+                }
+                colorPalette='orange'
+                width='100%'
+              >
+                <FaAmazon /> View on Amazon
+              </Button>
+            )}
+          </VStack>
+        </Box>
+
+        <Stack gap={6}>
+          <Box>
+            <Heading as='h1' size='xl' mb={2}>
+              {book.title}
+              {book.subtitle && (
+                <Text
+                  as='span'
+                  display='block'
+                  fontSize='lg'
+                  fontWeight='normal'
+                  color={isDark ? 'gray.400' : 'gray.600'}
+                  mt={2}
+                >
+                  {book.subtitle}
+                </Text>
+              )}
+            </Heading>
+            <Text fontSize='lg' color={isDark ? 'gray.400' : 'gray.600'} mb={4}>
+              {book.author}
+            </Text>
+
+            {(book.categories || book.pageCount) && (
+              <Flex gap={4} mb={4}>
+                {book.categories && (
+                  <Box>
+                    <Text
+                      fontSize='sm'
+                      color={isDark ? 'gray.400' : 'gray.600'}
+                    >
+                      Categories
+                    </Text>
+                    <Text fontSize='md'>{book.categories}</Text>
+                  </Box>
+                )}
+                {book.pageCount && (
+                  <Box>
+                    <Text
+                      fontSize='sm'
+                      color={isDark ? 'gray.400' : 'gray.600'}
+                    >
+                      Pages
+                    </Text>
+                    <Text fontSize='md'>{book.pageCount}</Text>
+                  </Box>
+                )}
+              </Flex>
+            )}
+
+            <Flex gap={4} mb={6}>
+              <Box>
+                <Text fontSize='sm' color={isDark ? 'gray.400' : 'gray.600'}>
+                  Status
+                </Text>
+                <Text fontSize='md' fontWeight='medium'>
+                  {book.status === 'CURRENT'
+                    ? 'Currently Reading'
+                    : book.status === 'PREVIOUS'
+                      ? 'Previously Read'
+                      : 'Upcoming'}
+                </Text>
+              </Box>
+
+              {book.startDate && (
+                <Box>
+                  <Text fontSize='sm' color={isDark ? 'gray.400' : 'gray.600'}>
+                    Started
+                  </Text>
+                  <Text fontSize='md' fontWeight='medium'>
+                    {new Date(
+                      new Date(book.startDate).toDateString()
+                    ).toLocaleDateString()}
+                  </Text>
+                </Box>
+              )}
+
+              {book.endDate && (
+                <Box>
+                  <Text fontSize='sm' color={isDark ? 'gray.400' : 'gray.600'}>
+                    Finished
+                  </Text>
+                  <Text fontSize='md' fontWeight='medium'>
+                    {new Date(
+                      new Date(book.endDate).toDateString()
+                    ).toLocaleDateString()}
+                  </Text>
+                </Box>
+              )}
+            </Flex>
+
+            {isAdmin && book.status === 'PREVIOUS' && (
+              <Button
+                colorPalette='blue'
+                variant='ghost'
+                onClick={() => setIsEditDatesModalOpen(true)}
+                mb={6}
+              >
+                Edit Dates
+              </Button>
+            )}
+
+            <Box mb={8}>
+              <Heading as='h2' size='md' mb={4}>
+                Your Rating & Review
+              </Heading>
+              <StarRating
+                averageRating={book.averageRating}
+                onRate={handleRate}
+                size='lg'
+                totalRatings={book.totalRatings}
+                userRating={book.userRating}
+              />
+            </Box>
+
+            {ratings && ratings.length > 0 && (
+              <Box>
+                <Heading as='h2' size='md' mb={4}>
+                  Group Reviews
+                </Heading>
+                <Stack gap={4}>
+                  {ratings.map((review) => (
+                    <Box
+                      key={review.id}
+                      p={4}
+                      borderWidth='1px'
+                      borderRadius='lg'
+                      bg={isDark ? 'gray.800' : 'white'}
+                    >
+                      <Flex justify='space-between' align='center' mb={2}>
+                        <Text fontWeight='medium'>
+                          {review.user.firstName} {review.user.lastName}
+                        </Text>
+                        <StarRating
+                          averageRating={review.rating}
+                          size='sm'
+                          readOnly
+                        />
+                      </Flex>
+                      {review.review && <Text>{review.review}</Text>}
+                    </Box>
+                  ))}
+                </Stack>
+              </Box>
+            )}
+          </Box>
+        </Stack>
+      </Grid>
+
+      <EditDatesModal
+        bookId={book.id}
+        groupId={groupId as string}
+        isOpen={isEditDatesModalOpen}
+        onClose={() => setIsEditDatesModalOpen(false)}
+        initialStartDate={book.startDate}
+        initialEndDate={book.endDate}
+      />
+    </Container>
+  );
+}

@@ -20,7 +20,7 @@ export async function GET(request: Request) {
 		const response = await fetch(
 			`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
 				query
-			)}&maxResults=5`
+			)}&maxResults=15`
 		);
 
 		if (!response.ok) {
@@ -29,16 +29,22 @@ export async function GET(request: Request) {
 
 		const data: GoogleBooksResponse = await response.json();
 
-		const books = data.items?.map((item) => ({
-			id: item.id,
-			title: item.volumeInfo.title,
-			author: item.volumeInfo.authors?.[0] || 'Unknown Author',
-			description: item.volumeInfo.description,
-			imageUrl: item.volumeInfo.imageLinks?.thumbnail,
-			amazonUrl: `https://www.amazon.com/s?k=${encodeURIComponent(
-				`${item.volumeInfo.title} ${item.volumeInfo.authors?.[0] || ''}`
-			)}&i=stripbooks`,
-		})) || [];
+		const books = data.items?.map((item) => {
+			return ({
+				id: item.id,
+				title: item.volumeInfo.title,
+				subtitle: item.volumeInfo.subtitle,
+				author: item.volumeInfo.authors?.[0] || 'Unknown Author',
+				description: item.volumeInfo.description,
+				imageUrl: item.volumeInfo.imageLinks?.thumbnail || item.volumeInfo.imageLinks?.smallThumbnail,
+				pageCount: item.volumeInfo.pageCount,
+				categories: item.volumeInfo.categories?.join(', '),
+				textSnippet: item.searchInfo?.textSnippet,
+				amazonUrl: `https://www.amazon.com/s?k=${encodeURIComponent(
+					`${item.volumeInfo.title} ${item.volumeInfo.authors?.[0] || ''}`
+				)}&i=stripbooks`,
+			})
+		}) || [];
 
 		return NextResponse.json(books);
 	} catch (error) {

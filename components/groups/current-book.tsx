@@ -32,6 +32,7 @@ import {
 import { BookDescriptionModal } from '@/components/books/book-description-modal';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { DeleteBookDialog } from './delete-book-dialog';
+import { useAuth } from '@clerk/nextjs';
 
 interface CurrentBookProps {
   groupId: string;
@@ -55,6 +56,7 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
     book?.id || '',
     groupId
   );
+  const { userId } = useAuth();
 
   if (isLoading) {
     return <PageState isLoading />;
@@ -188,6 +190,18 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
                 textAlign={{ base: 'center', md: 'left' }}
               >
                 {book.title}
+                {book.subtitle && (
+                  <Text
+                    as='span'
+                    display='block'
+                    fontSize='lg'
+                    fontWeight='normal'
+                    color={isDark ? 'gray.400' : 'gray.600'}
+                    mt={2}
+                  >
+                    {book.subtitle}
+                  </Text>
+                )}
               </Heading>
               <Text
                 fontSize='xl'
@@ -196,6 +210,24 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
               >
                 by {book.author}
               </Text>
+              {book.categories && (
+                <Text
+                  fontSize='sm'
+                  color={isDark ? 'gray.400' : 'gray.600'}
+                  textAlign={{ base: 'center', md: 'left' }}
+                >
+                  Categories: {book.categories}
+                </Text>
+              )}
+              {book.pageCount && (
+                <Text
+                  fontSize='sm'
+                  color={isDark ? 'gray.400' : 'gray.600'}
+                  textAlign={{ base: 'center', md: 'left' }}
+                >
+                  Pages: {book.pageCount}
+                </Text>
+              )}
               {book.description && (
                 <Box>
                   <Text
@@ -355,25 +387,27 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
                           <Text fontWeight='medium'>
                             {note.user.firstName} {note.user.lastName}
                           </Text>
-                          <Flex gap={2}>
-                            <Button
-                              size='sm'
-                              colorPalette='blue'
-                              variant='ghost'
-                              onClick={() => handleEditNote(note.id)}
-                            >
-                              <FaEdit />
-                            </Button>
-                            <Button
-                              size='sm'
-                              colorPalette='red'
-                              variant='ghost'
-                              onClick={() => handleDeleteNote(note.id)}
-                              disabled={deleteMutation.isPending}
-                            >
-                              <FaTimes />
-                            </Button>
-                          </Flex>
+                          {note.user.clerkId === userId && (
+                            <Flex gap={2}>
+                              <Button
+                                size='sm'
+                                colorPalette='blue'
+                                variant='ghost'
+                                onClick={() => handleEditNote(note.id)}
+                              >
+                                <FaEdit />
+                              </Button>
+                              <Button
+                                size='sm'
+                                colorPalette='red'
+                                variant='ghost'
+                                onClick={() => handleDeleteNote(note.id)}
+                                disabled={deleteMutation.isPending}
+                              >
+                                <FaTimes />
+                              </Button>
+                            </Flex>
+                          )}
                         </Flex>
                         <Text>{note.content}</Text>
                         <Text fontSize='xs' color='gray.500' mt={2}>

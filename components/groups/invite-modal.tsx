@@ -5,6 +5,7 @@ import { Flex, Input } from '@chakra-ui/react';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
 import { DialogWrapper } from '@/components/ui/dialog/dialog-wrapper';
+import { isValidEmail } from '@/lib/utils';
 
 interface InviteModalProps {
   groupId: string;
@@ -31,6 +32,7 @@ async function inviteMember(groupId: string, email: string) {
 
 export function InviteModal({ groupId, isOpen, onClose }: InviteModalProps) {
   const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
   const queryClient = useQueryClient();
 
   const inviteMutation = useMutation({
@@ -39,6 +41,7 @@ export function InviteModal({ groupId, isOpen, onClose }: InviteModalProps) {
       queryClient.invalidateQueries({ queryKey: ['group-members', groupId] });
       onClose();
       setEmail('');
+      setError('');
       toaster.create({
         title: 'Invitation sent',
         description: 'An invitation has been sent to ' + email,
@@ -56,45 +59,50 @@ export function InviteModal({ groupId, isOpen, onClose }: InviteModalProps) {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim()) return;
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    setError('');
+  };
+
+  const handleSubmit = () => {
+    if (!email.trim()) {
+      setError('Email is required');
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
     inviteMutation.mutate();
   };
 
-  const footer = (
-    <>
-      <Button variant='ghost' onClick={onClose}>
-        Cancel
-      </Button>
-      <Button
-        colorPalette='blue'
-        type='submit'
-        loading={inviteMutation.isPending}
-      >
-        Send Invitation
-      </Button>
-    </>
-  );
-
   return (
-    <DialogWrapper
-      isOpen={isOpen}
-      onClose={onClose}
-      title='Invite Member'
-      footer={footer}
-    >
-      <Flex as='form' flexDirection='column' gap={4} onSubmit={handleSubmit}>
-        <Field label='Email address' invalid={false}>
+    <DialogWrapper isOpen={isOpen} onClose={onClose} title='Invite Member'>
+      <Flex direction='column' gap={4}>
+        <Field label='Email address' invalid={!!error} helperText={error}>
           <Input
             padding={2}
             type='email'
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={handleEmailChange}
             placeholder='Enter email address'
-            required
+            aria-invalid={!!error}
           />
         </Field>
+        <Flex justify='flex-end' gap={3} mt={4}>
+          <Button variant='ghost' onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            colorPalette='blue'
+            onClick={handleSubmit}
+            loading={inviteMutation.isPending}
+          >
+            Send Invitation
+          </Button>
+        </Flex>
       </Flex>
     </DialogWrapper>
   );

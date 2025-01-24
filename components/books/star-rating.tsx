@@ -99,10 +99,15 @@ export function StarRating({
     lg: 'md',
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (selectedRating) {
-      onRate?.(selectedRating, review);
-      handleClose();
+      // Wrapped the onRate call in a setTimeout to break the event chain. This ensures that any event propagation is completed before we execute the rating action.
+      setTimeout(() => {
+        onRate?.(selectedRating, review);
+        handleClose();
+      }, 0);
     }
   };
 
@@ -114,7 +119,12 @@ export function StarRating({
   };
 
   const footer = (
-    <>
+    <Box
+      onClick={(e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
       <Button
         colorPalette='purple'
         onClick={handleSubmit}
@@ -124,10 +134,17 @@ export function StarRating({
       >
         Submit{review ? ' with Review' : ''}
       </Button>
-      <Button variant='ghost' onClick={handleClose}>
+      <Button
+        variant='ghost'
+        onClick={(e: React.MouseEvent) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleClose();
+        }}
+      >
         Cancel
       </Button>
-    </>
+    </Box>
   );
 
   return (
@@ -162,7 +179,11 @@ export function StarRating({
           <Button
             size='sm'
             variant='outline'
-            onClick={() => setIsModalOpen(true)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsModalOpen(true);
+            }}
           >
             {userRating ? 'Change Review' : 'Add Review'}
           </Button>
@@ -176,52 +197,79 @@ export function StarRating({
           title={userRating ? 'Change Review' : 'Add Review'}
           footer={footer}
         >
-          <HStack gap={1} mb={4} justify='center'>
-            {[1, 2, 3, 4, 5].map((rating) => (
-              <IconButton
-                key={rating}
-                aria-label={`Rate ${rating} stars`}
-                bg='transparent'
-                color={
-                  rating <= (tempRating || selectedRating || userRating || 0)
-                    ? 'yellow.400'
-                    : isDark
-                      ? 'gray.600'
-                      : 'gray.200'
-                }
-                minW={0}
-                onClick={() => setSelectedRating(rating)}
-                onMouseEnter={() => setTempRating(rating)}
-                onMouseLeave={() => setTempRating(null)}
-                size='lg'
-                variant='ghost'
-                _hover={{
-                  bg: 'transparent',
-                  color: 'yellow.500',
-                }}
-              >
-                <FaStar size={iconSizes.lg * 4} />
-              </IconButton>
-            ))}
-          </HStack>
-          <Textarea
-            bg={isDark ? 'gray.800' : 'white'}
-            borderColor={isDark ? 'gray.600' : 'gray.200'}
-            mb={4}
-            p={2}
-            onChange={(e) => setReview(e.target.value)}
-            placeholder='Write your review (optional)'
-            rows={4}
-            size='md'
-            value={review}
-            _hover={{
-              borderColor: isDark ? 'gray.500' : 'gray.300',
+          <Box
+            onClick={(e: React.MouseEvent) => {
+              e.preventDefault();
+              e.stopPropagation();
             }}
-            _focus={{
-              borderColor: 'purple.500',
-              boxShadow: `0 0 0 1px ${isDark ? 'purple.500' : 'purple.500'}`,
-            }}
-          />
+          >
+            <HStack gap={1} mb={4} justify='center'>
+              {[1, 2, 3, 4, 5].map((rating) => (
+                <IconButton
+                  key={rating}
+                  aria-label={`Rate ${rating} stars`}
+                  bg='transparent'
+                  color={
+                    rating <= (tempRating || selectedRating || userRating || 0)
+                      ? 'yellow.400'
+                      : isDark
+                        ? 'gray.600'
+                        : 'gray.200'
+                  }
+                  minW={0}
+                  onClick={(e: React.MouseEvent) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setSelectedRating(rating);
+                  }}
+                  onMouseEnter={(e: React.MouseEvent) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setTempRating(rating);
+                  }}
+                  onMouseLeave={(e: React.MouseEvent) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setTempRating(null);
+                  }}
+                  size='lg'
+                  variant='ghost'
+                  _hover={{
+                    bg: 'transparent',
+                    color: 'yellow.500',
+                  }}
+                >
+                  <FaStar size={iconSizes.lg * 4} />
+                </IconButton>
+              ))}
+            </HStack>
+            <Textarea
+              bg={isDark ? 'gray.800' : 'white'}
+              borderColor={isDark ? 'gray.600' : 'gray.200'}
+              mb={4}
+              p={2}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setReview(e.target.value);
+              }}
+              onClick={(e: React.MouseEvent) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              placeholder='Write your review (optional)'
+              rows={4}
+              size='md'
+              value={review}
+              _hover={{
+                borderColor: isDark ? 'gray.500' : 'gray.300',
+              }}
+              _focus={{
+                borderColor: 'purple.500',
+                boxShadow: `0 0 0 1px ${isDark ? 'purple.500' : 'purple.500'}`,
+              }}
+            />
+          </Box>
         </DialogWrapper>
       )}
     </Box>
