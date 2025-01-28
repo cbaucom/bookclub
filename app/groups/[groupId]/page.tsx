@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { Container, Tabs } from '@chakra-ui/react';
+import { Container, Tabs, Box } from '@chakra-ui/react';
 import { BookList } from '@/components/groups/book-list';
 import { CurrentBook } from '@/components/groups/current-book';
 import { GroupHeader } from '@/components/groups/group-header';
@@ -44,23 +44,46 @@ export default function GroupPage() {
     <Container mx='auto' maxW='6xl' px={4} py={8}>
       <GroupHeader group={group} />
 
-      <Tabs.Root defaultValue='current'>
-        <Tabs.List gap={4}>
-          <Tabs.Trigger value='current'>Current Book</Tabs.Trigger>
-          <Tabs.Trigger value='previous'>Previous Books</Tabs.Trigger>
-          <Tabs.Trigger value='members'>Members</Tabs.Trigger>
-        </Tabs.List>
-        <Tabs.Indicator />
-        <Tabs.Content value='current'>
-          <CurrentBook groupId={groupId as string} />
-        </Tabs.Content>
-        <Tabs.Content value='previous'>
-          <BookList groupId={groupId as string} status='PREVIOUS' />
-        </Tabs.Content>
-        <Tabs.Content value='members'>
-          <MemberList groupId={groupId as string} />
-        </Tabs.Content>
-      </Tabs.Root>
+      <Box mt={2}>
+        <Tabs.Root defaultValue='current'>
+          <Tabs.List gap={2} overflowX='auto' pb={2} mb={-2}>
+            <Tabs.Trigger
+              value='current'
+              px={4}
+              py={2}
+              fontSize={{ base: 'sm', md: 'md' }}
+            >
+              Current Book
+            </Tabs.Trigger>
+            <Tabs.Trigger
+              value='previous'
+              px={4}
+              py={2}
+              fontSize={{ base: 'sm', md: 'md' }}
+            >
+              Previous Books
+            </Tabs.Trigger>
+            <Tabs.Trigger
+              value='members'
+              px={4}
+              py={2}
+              fontSize={{ base: 'sm', md: 'md' }}
+            >
+              Members
+            </Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Indicator />
+          <Tabs.Content value='current' pt={6}>
+            <CurrentBook groupId={groupId as string} />
+          </Tabs.Content>
+          <Tabs.Content value='previous' pt={6}>
+            <BookList groupId={groupId as string} status='PREVIOUS' />
+          </Tabs.Content>
+          <Tabs.Content value='members' pt={6}>
+            <MemberList groupId={groupId as string} />
+          </Tabs.Content>
+        </Tabs.Root>
+      </Box>
     </Container>
   );
 }

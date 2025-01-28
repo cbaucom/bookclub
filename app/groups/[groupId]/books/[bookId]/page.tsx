@@ -89,6 +89,7 @@ export default function BookPage() {
                 onClick={() =>
                   window.open(book.amazonUrl!, '_blank', 'noopener,noreferrer')
                 }
+                color='white'
                 colorPalette='orange'
                 width='100%'
               >

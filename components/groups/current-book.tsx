@@ -171,6 +171,8 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
                 boxShadow='md'
                 bg={isDark ? 'gray.700' : 'gray.100'}
                 p={4}
+                maxW={{ base: '200px', md: '100%' }}
+                mx={{ base: 'auto', md: 0 }}
               >
                 <Image
                   src={book.imageUrl}
@@ -190,26 +192,26 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
                 textAlign={{ base: 'center', md: 'left' }}
               >
                 {book.title}
+                <Text
+                  fontSize='sm'
+                  color={isDark ? 'gray.400' : 'gray.600'}
+                  textAlign={{ base: 'center', md: 'left' }}
+                >
+                  by {book.author}
+                </Text>
                 {book.subtitle && (
                   <Text
                     as='span'
                     display='block'
-                    fontSize='lg'
+                    fontSize='md'
                     fontWeight='normal'
-                    color={isDark ? 'gray.400' : 'gray.600'}
+                    color={isDark ? 'gray.300' : 'gray.700'}
                     mt={2}
                   >
                     {book.subtitle}
                   </Text>
                 )}
               </Heading>
-              <Text
-                fontSize='xl'
-                color={isDark ? 'gray.400' : 'gray.600'}
-                textAlign={{ base: 'center', md: 'left' }}
-              >
-                by {book.author}
-              </Text>
               {book.categories && (
                 <Text
                   fontSize='sm'
@@ -231,6 +233,13 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
               {book.description && (
                 <Box>
                   <Text
+                    fontSize='sm'
+                    color={isDark ? 'gray.400' : 'gray.600'}
+                    textAlign={{ base: 'center', md: 'left' }}
+                  >
+                    Description:
+                  </Text>
+                  <Text
                     color={isDark ? 'gray.300' : 'gray.700'}
                     fontSize='md'
                     lineHeight='tall'
@@ -251,6 +260,24 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
                     ) : (
                       book.description
                     )}
+                  </Text>
+                </Box>
+              )}
+              {book.textSnippet && (
+                <Box>
+                  <Text
+                    fontSize='sm'
+                    color={isDark ? 'gray.400' : 'gray.600'}
+                    textAlign={{ base: 'center', md: 'left' }}
+                  >
+                    Review:
+                  </Text>
+                  <Text
+                    fontSize='md'
+                    color={isDark ? 'gray.300' : 'gray.700'}
+                    textAlign={{ base: 'center', md: 'left' }}
+                  >
+                    {book.textSnippet}
                   </Text>
                 </Box>
               )}

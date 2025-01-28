@@ -59,7 +59,7 @@ function BookCard({
         >
           <Box flex='1' minH={0}>
             <Grid
-              templateColumns={{ base: '100px 1fr', md: '120px 1fr' }}
+              templateColumns={{ base: '80px 1fr', md: '120px 1fr' }}
               gap={4}
             >
               {book.imageUrl && (

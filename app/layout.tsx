@@ -30,7 +30,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang='en' suppressHydrationWarning>
         <body className={`${geistSans.variable} ${geistMono.variable}`}>
-          <Providers>
+          <Providers props={{ defaultTheme: 'system' }}>
             <Box w='full' minH='100vh'>
               <Container maxW='6xl' px={4} mx='auto'>
                 <Navbar />

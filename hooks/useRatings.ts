@@ -60,6 +60,11 @@ export function useRatings(bookId: string, groupId: string) {
 				queryKey: ['currentBook', groupId],
 				refetchType: 'all',
 			});
+			// Invalidate the individual book query
+			queryClient.invalidateQueries({
+				queryKey: ['book', bookId, groupId],
+				refetchType: 'all',
+			});
 			// Invalidate the specific rating that changed
 			queryClient.invalidateQueries({
 				queryKey: ['ratings', bookId],

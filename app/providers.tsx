@@ -1,15 +1,33 @@
 'use client';
 
+import { ChakraProvider, defaultSystem } from '@chakra-ui/react';
+import { ThemeProvider } from 'next-themes';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import React, { useState } from 'react';
-import { Provider } from '@/components/ui/provider';
+import { Toaster } from '@/components/ui/toaster';
+import { FontModeProvider } from '@/components/ui/font-mode';
+import { ColorModeProvider } from '@/components/ui/color-mode';
+import { ColorModeProviderProps } from '@/components/ui/color-mode';
 
-export default function Providers({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient());
+const queryClient = new QueryClient();
 
+export default function Providers({
+  children,
+  props,
+}: {
+  children: React.ReactNode;
+  props: ColorModeProviderProps;
+}) {
   return (
-    <Provider>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </Provider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider attribute='class'>
+        <ChakraProvider value={defaultSystem}>
+          <ColorModeProvider {...props} />
+          <FontModeProvider>
+            {children}
+            <Toaster />
+          </FontModeProvider>
+        </ChakraProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
