@@ -24,15 +24,15 @@ export default function HomePage() {
         <SignedOut>
           <Box>
             <SignInButton mode='modal'>
-              <Button px={8} size='lg' colorPalette='black'>
+              <Button px={8} size='lg' colorPalette='purple'>
                 Get Started
               </Button>
             </SignInButton>
           </Box>
         </SignedOut>
         <SignedIn>
-          <Link href='/dashboard' passHref>
-            <Button px={8} size='lg' colorPalette='black'>
+          <Link href='/groups' passHref>
+            <Button px={8} size='lg' colorPalette='purple'>
               View My Groups
             </Button>
           </Link>

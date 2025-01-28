@@ -33,6 +33,8 @@ import { BookDescriptionModal } from '@/components/books/book-description-modal'
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { DeleteBookDialog } from './delete-book-dialog';
 import { useAuth } from '@clerk/nextjs';
+import { EmptyState } from '@/components/ui/empty-state';
+import { LuBook } from 'react-icons/lu';
 
 interface CurrentBookProps {
   groupId: string;
@@ -64,22 +66,25 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
 
   if (!book) {
     return (
-      <Box textAlign='center' py={8}>
-        <Text fontSize='lg'>No current book</Text>
+      <EmptyState
+        icon={<LuBook size={24} />}
+        title='No Current Book'
+        description='Add a book to get started with your reading group.'
+      >
         <Button
           mt={4}
           colorPalette='purple'
           size='sm'
           onClick={() => setIsAddBookModalOpen(true)}
         >
-          Add a Book
+          + Add a Book
         </Button>
         <AddBookModal
           groupId={groupId}
           isOpen={isAddBookModalOpen}
           onClose={() => setIsAddBookModalOpen(false)}
         />
-      </Box>
+      </EmptyState>
     );
   }
 

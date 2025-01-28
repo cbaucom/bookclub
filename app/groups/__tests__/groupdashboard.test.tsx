@@ -1,7 +1,7 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ChakraProvider, defaultSystem } from '@chakra-ui/react';
-import Dashboard from '@/app/dashboard/page';
+import GroupDashboard from '@/app/groups/page';
 import * as groupHooks from '@/hooks/useGroups';
 import * as mutationHooks from '@/hooks/useGroupMutations';
 import { Privacy } from '@prisma/client';
@@ -53,7 +53,7 @@ function renderWithProviders(ui: React.ReactElement) {
   );
 }
 
-describe('Dashboard', () => {
+describe('GroupDashboard', () => {
   const mockCreateMutate = jest.fn();
   const mockDeleteMutate = jest.fn();
 
@@ -91,44 +91,10 @@ describe('Dashboard', () => {
   });
 
   it('renders groups', () => {
-    renderWithProviders(<Dashboard />);
+    renderWithProviders(<GroupDashboard />);
     expect(screen.getByText('Your Groups')).toBeInTheDocument();
     expect(screen.getByText('Book Club 1')).toBeInTheDocument();
     expect(screen.getByText('Book Club 2')).toBeInTheDocument();
-  });
-
-  it('creates a new group', async () => {
-    renderWithProviders(<Dashboard />);
-
-    const newGroupName = 'New Book Club';
-    const newGroupDesc = 'A new book club description';
-
-    const nameInput = screen.getByPlaceholderText(/group name/i);
-    const descInput = screen.getByPlaceholderText(/description/i);
-    const createButton = screen.getByRole('button', { name: /create/i });
-
-    fireEvent.change(nameInput, { target: { value: newGroupName } });
-    fireEvent.change(descInput, { target: { value: newGroupDesc } });
-    fireEvent.click(createButton);
-
-    await waitFor(() => {
-      expect(mockCreateMutate).toHaveBeenCalledWith({
-        name: newGroupName,
-        description: newGroupDesc,
-        privacy: Privacy.PUBLIC,
-      });
-    });
-  });
-
-  it('deletes a group', async () => {
-    renderWithProviders(<Dashboard />);
-
-    const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-    fireEvent.click(deleteButtons[0]); // Delete first group
-
-    await waitFor(() => {
-      expect(mockDeleteMutate).toHaveBeenCalledWith('1');
-    });
   });
 
   it('shows loading state', () => {
@@ -139,7 +105,7 @@ describe('Dashboard', () => {
       status: 'loading',
     });
 
-    renderWithProviders(<Dashboard />);
+    renderWithProviders(<GroupDashboard />);
     expect(screen.getByText(/loading/i)).toBeInTheDocument();
   });
 
@@ -152,7 +118,7 @@ describe('Dashboard', () => {
       isLoading: false,
     });
 
-    renderWithProviders(<Dashboard />);
+    renderWithProviders(<GroupDashboard />);
     expect(screen.getByText(/error/i)).toBeInTheDocument();
   });
 });

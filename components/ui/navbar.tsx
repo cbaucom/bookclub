@@ -44,7 +44,7 @@ export function Navbar() {
 
   const NavLinks = () => (
     <>
-      <Link as={NextLink} href='/dashboard'>
+      <Link as={NextLink} href='/groups'>
         My Groups
       </Link>
       <Link as={NextLink} href='/discover'>
@@ -56,7 +56,7 @@ export function Navbar() {
 
   const DrawerNavLinks = () => (
     <Flex direction='column' gap={4}>
-      <Link as={NextLink} href='/dashboard' onClick={onClose}>
+      <Link as={NextLink} href='/groups' onClick={onClose}>
         <Flex align='center' gap={2}>
           <FaUserGroup />
           My Groups

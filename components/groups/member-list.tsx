@@ -37,7 +37,7 @@ export function MemberList({ groupId }: MemberListProps) {
             colorPalette='purple'
             onClick={() => setIsInviteModalOpen(true)}
           >
-            Invite Members
+            + Invite Members
           </Button>
         )}
       </Flex>

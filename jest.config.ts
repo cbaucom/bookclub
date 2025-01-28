@@ -19,6 +19,11 @@ const customJestConfig = {
 		'!**/*.d.ts',
 		'!**/node_modules/**',
 	],
+	// transformIgnorePatterns: [
+	// 	'/node_modules/(?!(string-width|strip-ansi|eastasianwidth|emoji-regex|@clerk|is-fullwidth-code-point))',
+	// ],
+	// extensionsToTreatAsEsm: ['.ts', '.tsx', '.jsx'],
+	// moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
 };
 
 export default createJestConfig(customJestConfig);

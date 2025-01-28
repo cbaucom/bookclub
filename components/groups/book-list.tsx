@@ -14,6 +14,7 @@ import { AddBookModal } from './add-book-modal';
 import { StarRating } from '@/components/books/star-rating';
 import { useRatings } from '@/hooks/useRatings';
 import { FaTrash, FaAmazon, FaBookOpen } from 'react-icons/fa';
+import { LuBookMarked, LuBookPlus, LuBookOpen } from 'react-icons/lu';
 import { useTheme } from 'next-themes';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useBooks } from '@/hooks/useBooks';
@@ -21,6 +22,7 @@ import { BookWithRatings } from '@/types';
 import { ReviewItem } from '@/components/books/star-rating';
 import { DeleteBookDialog } from './delete-book-dialog';
 import { EditDatesModal } from '@/components/books/edit-dates-modal';
+import { EmptyState } from '@/components/ui/empty-state';
 import Link from 'next/link';
 
 function BookCard({
@@ -257,28 +259,51 @@ export function BookList({ groupId, status }: BookListProps) {
   }
 
   if (!books?.length) {
+    const emptyStateProps = {
+      PREVIOUS: {
+        icon: <LuBookMarked size={24} />,
+        title: 'No Books Read Yet',
+        description: 'Add books that your group has finished reading.',
+        buttonText: "Add a Book You've Read",
+      },
+      UPCOMING: {
+        icon: <LuBookPlus size={24} />,
+        title: 'No Upcoming Books',
+        description: 'Add books that your group plans to read next.',
+        buttonText: 'Add a Book to Read',
+      },
+      CURRENT: {
+        icon: <LuBookOpen size={24} />,
+        title: 'No Current Books',
+        description: 'Add a book that your group is currently reading.',
+        buttonText: 'Add a Book',
+      },
+    }[status];
+
     return (
-      <Box textAlign='center' py={8}>
-        <Text fontSize='lg' mb={4}>
-          {status === 'PREVIOUS'
-            ? "You haven't added any books you've read yet"
-            : status === 'UPCOMING'
-              ? "You haven't added any books to read next"
-              : 'No books found'}
-        </Text>
-        <Button
-          colorPalette='purple'
-          onClick={() => setIsAddBookModalOpen(true)}
+      <>
+        <EmptyState
+          icon={emptyStateProps.icon}
+          title={emptyStateProps.title}
+          description={emptyStateProps.description}
         >
-          Add {status === 'PREVIOUS' ? "a Book You've Read" : 'a Book'}
-        </Button>
+          <Button
+            mt={4}
+            colorPalette='purple'
+            size='sm'
+            onClick={() => setIsAddBookModalOpen(true)}
+          >
+            {emptyStateProps.icon}
+            {emptyStateProps.buttonText}
+          </Button>
+        </EmptyState>
         <AddBookModal
           groupId={groupId}
           isOpen={isAddBookModalOpen}
           onClose={() => setIsAddBookModalOpen(false)}
           defaultStatus={status}
         />
-      </Box>
+      </>
     );
   }
 
