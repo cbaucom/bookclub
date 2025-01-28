@@ -133,7 +133,7 @@ model Invitation {
 
 model Rating {
   id        String   @id @default(ulid())
-  rating    Int
+  rating    Float
   review    String?
   book      Book     @relation(fields: [bookId], references: [id])
   bookId    String
