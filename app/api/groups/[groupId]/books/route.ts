@@ -18,11 +18,8 @@ export async function GET(
 		const { searchParams } = new URL(request.url);
 		const status = searchParams.get('status') || 'CURRENT';
 
-		console.log('[GROUPS_BOOKS_GET] Fetching books with status:', status);
-
 		// Validate status
 		if (status !== 'CURRENT' && status !== 'PREVIOUS' && status !== 'UPCOMING') {
-			console.log('[GROUPS_BOOKS_GET] Invalid status:', status);
 			return NextResponse.json(
 				{ error: 'Invalid status. Must be one of: CURRENT, PREVIOUS, UPCOMING' },
 				{ status: 400 }
@@ -61,8 +58,6 @@ export async function GET(
 				startDate: 'desc',
 			},
 		});
-
-		console.log('[GROUPS_BOOKS_GET] Found books:', books.length);
 
 		// Calculate average ratings and user ratings
 		const booksWithRatings = books.map((bookInGroup) => {
@@ -118,7 +113,6 @@ export async function POST(
 		}
 
 		const data = await request.json();
-		console.log('Received book data:', data);
 
 		const { title, author, description, imageUrl, amazonUrl, status, subtitle, pageCount, categories, textSnippet } = data;
 
@@ -202,8 +196,6 @@ export async function POST(
 			},
 		});
 
-		console.log('Created book in group:', newBookInGroup);
-
 		// Format the response to match the expected Book type
 		const response = {
 			id: newBookInGroup.book.id,
@@ -220,8 +212,6 @@ export async function POST(
 			endDate: newBookInGroup.endDate,
 			status: newBookInGroup.status,
 		};
-
-		console.log('Sending response:', response);
 
 		return NextResponse.json(response);
 	} catch (error) {

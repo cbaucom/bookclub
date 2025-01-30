@@ -59,13 +59,6 @@ export async function POST(req: Request) {
 
 		const data = await req.json();
 
-		console.log('[GROUPS_CREATE] Creating group with:', {
-			userId: user.id,
-			name: data.name,
-			description: data.description,
-			privacy: data.privacy || 'PUBLIC',
-		});
-
 		// First create the group
 		const newGroup = await prisma.group.create({
 			data: {
@@ -74,8 +67,6 @@ export async function POST(req: Request) {
 				privacy: data.privacy || 'PUBLIC',
 			},
 		});
-
-		console.log('[GROUPS_CREATE] Group created:', newGroup);
 
 		// Then create the membership
 		const membership = await prisma.membership.create({
@@ -89,8 +80,6 @@ export async function POST(req: Request) {
 				group: true,
 			},
 		});
-
-		console.log('[GROUPS_CREATE] Membership created:', membership);
 
 		return NextResponse.json(
 			{

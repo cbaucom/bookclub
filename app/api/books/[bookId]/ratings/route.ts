@@ -59,24 +59,15 @@ export async function POST(
 		}
 
 		const data = await request.json();
-		console.log('Rating data received:', data);
 
 		const { rating, review } = data;
 
 		if (!rating || rating < 0 || rating > 5) {
-			console.log('Invalid rating:', rating);
 			return NextResponse.json(
 				{ error: 'Rating must be between 0 and 5' },
 				{ status: 400 }
 			);
 		}
-
-		console.log('Attempting to upsert rating:', {
-			bookId,
-			userId: user.id,
-			rating,
-			review,
-		});
 
 		// Upsert the rating (create if doesn't exist, update if it does)
 		const updatedRating = await prisma.rating.upsert({
@@ -105,8 +96,6 @@ export async function POST(
 				},
 			},
 		});
-
-		console.log('Rating upserted successfully:', updatedRating);
 
 		return NextResponse.json(updatedRating);
 	} catch (error) {

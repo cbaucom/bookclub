@@ -67,11 +67,6 @@ export async function DELETE(
 	}
 
 	try {
-		console.log('[GROUPS_DELETE] Checking membership for:', {
-			userId: user.id,
-			groupId,
-		});
-
 		// Check if user is an admin of the group
 		const membership = await prisma.membership.findFirst({
 			where: {
@@ -81,8 +76,6 @@ export async function DELETE(
 			},
 		});
 
-		console.log('[GROUPS_DELETE] Membership found:', membership);
-
 		if (!membership) {
 			// Let's check if they're a member at all
 			const anyMembership = await prisma.membership.findFirst({
@@ -91,8 +84,6 @@ export async function DELETE(
 					userId: user.id,
 				},
 			});
-
-			console.log('[GROUPS_DELETE] Any membership found:', anyMembership);
 
 			return NextResponse.json(
 				{
