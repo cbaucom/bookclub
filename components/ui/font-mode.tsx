@@ -14,10 +14,10 @@ const FontModeContext = createContext<FontModeContextType | undefined>(
 );
 
 export function FontModeProvider({ children }: { children: React.ReactNode }) {
-  const [fontMode, setFontMode] = useState<FontMode>('sans');
+  const [fontMode, setFontMode] = useState<FontMode>('mono');
 
   useEffect(() => {
-    // Get initial font mode from localStorage or default to 'sans'
+    // Get initial font mode from localStorage or default to 'mono'
     const savedFontMode = localStorage.getItem('font-mode') as FontMode;
     if (savedFontMode) {
       setFontMode(savedFontMode);
@@ -26,7 +26,7 @@ export function FontModeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const toggleFontMode = () => {
-    const newMode = fontMode === 'sans' ? 'mono' : 'sans';
+    const newMode = fontMode === 'mono' ? 'sans' : 'mono';
     setFontMode(newMode);
     localStorage.setItem('font-mode', newMode);
     document.body.style.fontFamily = `var(--font-geist-${newMode})`;
