@@ -5,6 +5,7 @@ import { InviteModal } from './invite-modal';
 import { Button } from '@/components/ui/button';
 import { randomColor } from '@/lib/utils';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
+import { Avatar } from '../ui/avatar';
 
 interface MemberListProps {
   groupId: string;
@@ -42,48 +43,87 @@ export function MemberList({ groupId }: MemberListProps) {
         )}
       </Flex>
 
-      <Grid templateColumns='1fr' gap={4}>
+      <Grid gap={4} maxW='100%' width='100%'>
         {members.map((member) => (
-          <Box key={member.id} p={4} borderWidth='1px' borderRadius='lg'>
-            <Flex gap={4} align='center'>
-              <Box
-                bg={randomColor()}
-                borderRadius='full'
-                color='white'
-                fontSize='lg'
-                fontWeight='bold'
-                h='48px'
-                lineHeight='48px'
-                textAlign='center'
-                w='48px'
+          <Box
+            key={member.id}
+            bg='whiteAlpha.50'
+            borderRadius='lg'
+            borderWidth='1px'
+            maxW='100%'
+            p={4}
+            transition='all 0.2s'
+            width='100%'
+            _hover={{ borderColor: 'purple.500' }}
+          >
+            <Flex
+              align='center'
+              gap={4}
+              justify='space-between'
+              maxW='100%'
+              width='100%'
+              wrap={{ base: 'wrap', md: 'nowrap' }}
+            >
+              <Flex align='center' flex={1} gap={4} minWidth={0}>
+                <Avatar
+                  colorPalette={randomColor()}
+                  size={{ base: 'sm', md: 'md' }}
+                  src={member.user.imageUrl || undefined}
+                  variant='subtle'
+                />
+                <Box flex={1} minWidth={0}>
+                  <Text
+                    fontWeight='bold'
+                    maxW='100%'
+                    overflow='hidden'
+                    textOverflow='ellipsis'
+                    whiteSpace='nowrap'
+                  >
+                    {member.user.firstName} {member.user.lastName}
+                  </Text>
+                  <Text
+                    color='fg.muted'
+                    fontSize='sm'
+                    maxW='100%'
+                    overflow='hidden'
+                    textOverflow='ellipsis'
+                    whiteSpace='nowrap'
+                  >
+                    {member.user.email}
+                  </Text>
+                </Box>
+              </Flex>
+
+              <Flex
+                align={{ base: 'start', md: 'end' }}
+                direction='column'
+                flexShrink={0}
+                gap={1}
+                ml={{ base: 0, md: 4 }}
+                mt={{ base: 2, md: 0 }}
+                width={{ base: '100%', md: 'auto' }}
               >
-                {member.user.firstName?.[0] || ''}
-                {member.user.lastName?.[0] || ''}
-              </Box>
-              <Box flex='1'>
-                <Text fontWeight='bold'>
-                  {member.user.firstName} {member.user.lastName}
-                </Text>
-                <Text fontSize='sm' color='fg.muted'>
-                  {member.user.email}
-                </Text>
-              </Box>
-              <Box>
                 <Text
-                  fontSize='sm'
                   color={member.role === 'ADMIN' ? 'red.500' : 'fg.muted'}
+                  fontSize='sm'
                   fontWeight='medium'
+                  textAlign={{ base: 'left', md: 'right' }}
                 >
                   {member.role}
                 </Text>
-                <Text fontSize='xs' color='fg.muted'>
+                <Text
+                  color='fg.muted'
+                  fontSize='xs'
+                  textAlign={{ base: 'left', md: 'right' }}
+                >
                   Joined {new Date(member.createdAt).toLocaleDateString()}
                 </Text>
-              </Box>
+              </Flex>
             </Flex>
           </Box>
         ))}
       </Grid>
+
       <InviteModal
         groupId={groupId}
         isOpen={isInviteModalOpen}

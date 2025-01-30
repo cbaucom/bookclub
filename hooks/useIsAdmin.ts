@@ -10,6 +10,7 @@ export interface MembershipWithUser extends Membership {
 		firstName: string | null;
 		lastName: string | null;
 		email: string;
+		imageUrl: string | null;
 	};
 }
 

@@ -1,6 +1,6 @@
 import { Book, Note, Group, User, Comment, Reaction } from '@prisma/client';
 
-export type UserInfo = Pick<User, 'firstName' | 'lastName' | 'clerkId'>;
+export type UserInfo = Pick<User, 'firstName' | 'lastName' | 'clerkId' | 'imageUrl'>;
 
 export interface ReactionWithUser extends Reaction {
 	user: UserInfo;

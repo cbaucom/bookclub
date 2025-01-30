@@ -20,6 +20,7 @@ model User {
   firstName       String?
   lastName        String?
   username        String?      @unique
+  imageUrl        String?
   groups          Membership[]
   notes           Note[]
   comments        Comment[]
