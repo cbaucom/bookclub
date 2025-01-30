@@ -36,13 +36,60 @@ export function useGroupMutations() {
 				throw new Error('Failed to delete group');
 			}
 		},
-		onSuccess: () => {
+		onSuccess: (_, groupId) => {
+			// Invalidate the groups list
 			queryClient.invalidateQueries({ queryKey: ['groups'] });
+			// Invalidate the specific group
+			queryClient.invalidateQueries({ queryKey: ['groups', groupId] });
+		},
+	});
+
+	const updateMutation = useMutation<GroupWithRole, Error, Partial<Group>>({
+		mutationFn: async (updatedGroup) => {
+			const response = await fetch(`/api/groups/${updatedGroup.id}`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(updatedGroup),
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to update group');
+			}
+
+			return response.json();
+		},
+		onSuccess: (data, updatedGroup) => {
+			// Update the group in the cache
+			queryClient.setQueryData(['group', updatedGroup.id], data);
+			// Also invalidate the groups list
+			queryClient.invalidateQueries({ queryKey: ['groups'] });
+		},
+	});
+
+	const leaveMutation = useMutation<void, Error, string>({
+		mutationFn: async (groupId) => {
+			const response = await fetch(`/api/groups/${groupId}/leave`, {
+				method: 'POST',
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to leave group');
+			}
+		},
+		onSuccess: (_, groupId) => {
+			// Invalidate the groups list
+			queryClient.invalidateQueries({ queryKey: ['groups'] });
+			// Invalidate the specific group
+			queryClient.invalidateQueries({ queryKey: ['group', groupId] });
 		},
 	});
 
 	return {
 		createMutation,
 		deleteMutation,
+		updateMutation,
+		leaveMutation,
 	};
 }

@@ -109,3 +109,51 @@ export async function DELETE(
 		);
 	}
 }
+
+export async function PUT(
+	request: Request,
+	context: { params: Promise<{ groupId: string }> }
+) {
+	const { groupId } = await context.params;
+
+	if (!groupId) {
+		return NextResponse.json({ error: 'Group ID is required' }, { status: 400 });
+	}
+
+	const user = await getAuthenticatedUser();
+
+	if (!user) {
+		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+	}
+
+	const membership = await prisma.membership.findFirst({
+		where: {
+			groupId,
+			userId: user.id,
+		},
+	});
+
+	if (!membership) {
+		return NextResponse.json(
+			{ error: 'You do not have permission to update this group' },
+			{ status: 403 }
+		);
+	}
+
+	const { name, description } = await request.json();
+
+	try {
+		const updatedGroup = await prisma.group.update({
+			where: { id: groupId },
+			data: { name, description },
+		});
+
+		return NextResponse.json({
+			...updatedGroup,
+			role: membership.role,
+		});
+	} catch (error) {
+		console.error('[GROUPS_UPDATE]', error);
+		return NextResponse.json({ error: 'Failed to update group' }, { status: 500 });
+	}
+}

@@ -1,11 +1,20 @@
-import { Box, Flex, Heading, Text } from '@chakra-ui/react';
+import {
+  Box,
+  Editable,
+  Flex,
+  Heading,
+  PopoverRoot,
+  PopoverTrigger,
+  PopoverContent,
+  Text,
+} from '@chakra-ui/react';
 import type { GroupWithRole } from '@/types';
-import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGroupMutations } from '@/hooks/useGroupMutations';
 import { DialogWrapper } from '@/components/ui/dialog/dialog-wrapper';
-import { FaTrash } from 'react-icons/fa';
+import { FaCheck, FaPencilAlt, FaTrash, FaTimes } from 'react-icons/fa';
+import { Button } from '@/components/ui/button';
 
 interface GroupHeaderProps {
   group: GroupWithRole;
@@ -13,8 +22,18 @@ interface GroupHeaderProps {
 
 export function GroupHeader({ group }: GroupHeaderProps) {
   const router = useRouter();
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const { deleteMutation } = useGroupMutations();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [nameValue, setNameValue] = useState(group.name);
+  const [descriptionValue, setDescriptionValue] = useState(
+    group.description || ''
+  );
+  const { deleteMutation, updateMutation, leaveMutation } = useGroupMutations();
+
+  // Update local state when group prop changes
+  useEffect(() => {
+    setNameValue(group.name);
+    setDescriptionValue(group.description || '');
+  }, [group.name, group.description]);
 
   const handleDelete = () => {
     deleteMutation.mutate(group.id, {
@@ -24,59 +43,210 @@ export function GroupHeader({ group }: GroupHeaderProps) {
     });
   };
 
+  const handleLeave = () => {
+    leaveMutation.mutate(group.id, {
+      onSuccess: () => {
+        router.push('/groups');
+      },
+    });
+  };
+
+  const handleUpdate = (newValue: string, field: 'name' | 'description') => {
+    if (newValue === (field === 'name' ? group.name : group.description))
+      return;
+
+    updateMutation.mutate(
+      { id: group.id, [field]: newValue },
+      {
+        onSuccess: () => {
+          // Success toast could be added here
+        },
+      }
+    );
+  };
+
+  const isAdmin = group.role === 'ADMIN';
+  const modalTitle = isAdmin ? 'Delete Group' : 'Leave Group';
+  const modalAction = isAdmin ? handleDelete : handleLeave;
+  const modalButtonText = isAdmin
+    ? deleteMutation.isPending
+      ? 'Deleting...'
+      : 'Delete Group'
+    : leaveMutation.isPending
+      ? 'Leaving...'
+      : 'Leave Group';
+  const modalMessage = isAdmin
+    ? `Are you sure you want to delete "${group.name}"? This action cannot be undone.`
+    : `Are you sure you want to leave "${group.name}"? You'll need a new invitation to rejoin.`;
+
   return (
     <Box pb={4}>
-      <Flex justify='space-between' align='flex-start' gap={4}>
-        <Box>
-          <Heading as='h1' size='2xl'>
-            {group.name}
-          </Heading>
-          {group.description && (
-            <Text mt={4} fontSize='md' color='fg.muted'>
-              {group.description}
-            </Text>
-          )}
-        </Box>
-        {group.role === 'ADMIN' && (
-          <Flex gap={2} align='center'>
-            <Button
-              colorPalette='red'
-              gap={2}
-              onClick={() => setIsDeleteDialogOpen(true)}
-              size='xs'
+      <Flex
+        align={{ base: 'stretch', md: 'flex-start' }}
+        direction={{ base: 'column', md: 'row' }}
+        gap={{ base: 4, md: 8 }}
+      >
+        <Box flex='1'>
+          <Editable.Root
+            disabled={group.role !== 'ADMIN'}
+            onValueChange={(details) => setNameValue(details.value)}
+            onValueCommit={(details) => handleUpdate(details.value, 'name')}
+            onValueRevert={() => setNameValue(group.name)}
+            submitMode='none'
+            value={nameValue}
+          >
+            <Flex align='center' gap={2}>
+              <Editable.Preview>
+                <Heading as='h1' size={{ base: 'xl', md: '2xl' }}>
+                  {nameValue}
+                </Heading>
+              </Editable.Preview>
+              <Editable.Input />
+              {group.role === 'ADMIN' && (
+                <Editable.Control>
+                  <Editable.EditTrigger asChild>
+                    <Button
+                      aria-label='Edit group name'
+                      size='sm'
+                      variant='ghost'
+                    >
+                      <FaPencilAlt />
+                    </Button>
+                  </Editable.EditTrigger>
+                  <Editable.CancelTrigger asChild>
+                    <Button aria-label='Cancel edit' size='sm' variant='ghost'>
+                      <FaTimes />
+                    </Button>
+                  </Editable.CancelTrigger>
+                  <Editable.SubmitTrigger asChild>
+                    <Button
+                      aria-label='Save changes'
+                      size='sm'
+                      variant='ghost'
+                      colorScheme='green'
+                    >
+                      <FaCheck />
+                    </Button>
+                  </Editable.SubmitTrigger>
+                </Editable.Control>
+              )}
+            </Flex>
+          </Editable.Root>
+
+          {group.description !== null ? (
+            <Editable.Root
+              value={descriptionValue}
+              onValueChange={(details) => setDescriptionValue(details.value)}
+              onValueCommit={(details) =>
+                handleUpdate(details.value, 'description')
+              }
+              onValueRevert={() => setDescriptionValue(group.description || '')}
+              submitMode='none'
+              disabled={group.role !== 'ADMIN'}
             >
-              <FaTrash />
-              Delete Group
-            </Button>
-          </Flex>
-        )}
+              <Flex align='center' gap={2}>
+                <Editable.Preview>
+                  <Text fontSize='md' color='fg.muted'>
+                    {descriptionValue}
+                  </Text>
+                </Editable.Preview>
+                <Editable.Input />
+                {group.role === 'ADMIN' && (
+                  <Editable.Control>
+                    <Editable.EditTrigger asChild>
+                      <Button
+                        aria-label='Edit description'
+                        size='sm'
+                        variant='ghost'
+                      >
+                        <FaPencilAlt />
+                      </Button>
+                    </Editable.EditTrigger>
+                    <Editable.CancelTrigger asChild>
+                      <Button
+                        aria-label='Cancel edit'
+                        size='sm'
+                        variant='ghost'
+                      >
+                        <FaTimes />
+                      </Button>
+                    </Editable.CancelTrigger>
+                    <Editable.SubmitTrigger asChild>
+                      <Button
+                        aria-label='Save changes'
+                        size='sm'
+                        variant='ghost'
+                        colorScheme='green'
+                      >
+                        <FaCheck />
+                      </Button>
+                    </Editable.SubmitTrigger>
+                  </Editable.Control>
+                )}
+              </Flex>
+            </Editable.Root>
+          ) : null}
+        </Box>
+
+        <Box w={{ base: 'full', md: '100px' }} position='relative'>
+          <PopoverRoot>
+            <PopoverTrigger asChild>
+              <Button
+                variant='outline'
+                size='sm'
+                w={{ base: 'full', md: 'auto' }}
+              >
+                Actions
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              zIndex={1000}
+              position='absolute'
+              w={{ base: 'full', md: '200px' }}
+              mt={1}
+              transform={{
+                base: 'none',
+                md: 'translateX(-100%) translateX(100px)',
+              }}
+            >
+              <Button
+                w='full'
+                variant='ghost'
+                color='fg.error'
+                _hover={{ bg: 'bg.error', color: 'fg.error' }}
+                onClick={() => setIsModalOpen(true)}
+              >
+                <Flex align='center' gap={2}>
+                  <FaTrash />
+                  {isAdmin ? 'Delete Group' : 'Leave Group'}
+                </Flex>
+              </Button>
+            </PopoverContent>
+          </PopoverRoot>
+        </Box>
       </Flex>
 
       <DialogWrapper
-        isOpen={isDeleteDialogOpen}
-        onClose={() => setIsDeleteDialogOpen(false)}
-        title='Delete Group'
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={modalTitle}
         footer={
           <Flex gap={3} justify='flex-end'>
-            <Button
-              onClick={() => setIsDeleteDialogOpen(false)}
-              colorPalette='gray'
-            >
+            <Button onClick={() => setIsModalOpen(false)} colorPalette='gray'>
               Cancel
             </Button>
             <Button
-              onClick={handleDelete}
+              onClick={modalAction}
               colorPalette='red'
-              disabled={deleteMutation.isPending}
+              disabled={deleteMutation.isPending || leaveMutation.isPending}
             >
-              {deleteMutation.isPending ? 'Deleting...' : 'Delete Group'}
+              {modalButtonText}
             </Button>
           </Flex>
         }
       >
         <Text fontSize='md' my={4}>
-          Are you sure you want to delete &quot;{group.name}&quot;? This action
-          cannot be undone.
+          {modalMessage}
         </Text>
       </DialogWrapper>
     </Box>

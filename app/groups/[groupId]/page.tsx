@@ -41,7 +41,7 @@ export default function GroupPage() {
   }
 
   return (
-    <Container mx='auto' maxW='6xl' px={4} py={8}>
+    <Container mx='auto' maxW='6xl' p={4}>
       <GroupHeader group={group} />
 
       <Box mt={2}>
