@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { BASE_URL } from '@/lib/constants';
-import { BookWithRatings } from '@/types';
-import { useAuth } from '@clerk/nextjs';
+import { BookWithRatings, BookWithDetails } from '@/types';
 
 async function fetchBooks(groupId: string, status: string): Promise<BookWithRatings[]> {
 	const response = await fetch(`${BASE_URL}/api/groups/${groupId}/books?status=${status}`);
@@ -11,12 +10,15 @@ async function fetchBooks(groupId: string, status: string): Promise<BookWithRati
 	return response.json();
 }
 
-async function fetchCurrentBook(groupId: string): Promise<BookWithRatings | null> {
+async function getCurrentBook(groupId: string): Promise<BookWithDetails | null> {
 	const response = await fetch(`${BASE_URL}/api/groups/${groupId}/current-book`);
+
 	if (!response.ok) {
 		throw new Error('Failed to fetch current book');
 	}
-	return response.json();
+
+	const result = await response.json();
+	return result;
 }
 
 export function useBooks(groupId: string, status: 'CURRENT' | 'PREVIOUS' | 'UPCOMING') {
@@ -27,10 +29,9 @@ export function useBooks(groupId: string, status: 'CURRENT' | 'PREVIOUS' | 'UPCO
 }
 
 export function useCurrentBook(groupId: string) {
-	const { isLoaded, isSignedIn } = useAuth();
-	return useQuery({
-		queryKey: ['currentBook', groupId, isSignedIn],
-		queryFn: () => fetchCurrentBook(groupId),
-		enabled: isLoaded && isSignedIn,
+	return useQuery<BookWithDetails | null>({
+		queryKey: ['currentBook', groupId],
+		queryFn: () => getCurrentBook(groupId),
+		enabled: !!groupId,
 	});
 }

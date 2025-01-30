@@ -1,14 +1,16 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getAuthenticatedUser } from '@/lib/auth';
+import { fetchCommentReplies } from '@/lib/comments';
 
 export async function GET(
 	request: Request,
-	context: { params: Promise<{ groupId: string }> }
+	context: { params: { groupId: string } }
 ) {
 	try {
 		const user = await getAuthenticatedUser();
-		const { groupId } = await context.params;
+		const params = await context.params;
+		const { groupId } = params;
 
 		if (!user) {
 			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -24,12 +26,11 @@ export async function GET(
 
 		if (!membership) {
 			return NextResponse.json(
-				{ error: 'You do not have access to this group' },
+				{ error: 'You are not a member of this group' },
 				{ status: 403 }
 			);
 		}
 
-		// Get the current book
 		const currentBook = await prisma.bookInGroup.findFirst({
 			where: {
 				groupId,
@@ -39,17 +40,69 @@ export async function GET(
 				book: {
 					include: {
 						notes: {
-							include: {
-								user: true,
-							},
 							orderBy: {
 								createdAt: 'desc',
 							},
+							include: {
+								user: {
+									select: {
+										firstName: true,
+										lastName: true,
+										clerkId: true,
+									},
+								},
+								reactions: {
+									include: {
+										user: {
+											select: {
+												firstName: true,
+												lastName: true,
+												clerkId: true,
+											},
+										},
+									},
+								},
+								comments: {
+									where: {
+										parentId: null,
+									},
+									orderBy: {
+										createdAt: 'asc',
+									},
+									include: {
+										user: {
+											select: {
+												firstName: true,
+												lastName: true,
+												clerkId: true,
+											},
+										},
+										reactions: {
+											include: {
+												user: {
+													select: {
+														firstName: true,
+														lastName: true,
+														clerkId: true,
+													},
+												},
+											},
+										},
+									},
+								},
+							},
 						},
 						ratings: {
+							where: {
+								userId: user.id,
+							},
 							select: {
 								rating: true,
-								userId: true,
+							},
+						},
+						_count: {
+							select: {
+								ratings: true,
 							},
 						},
 					},
@@ -61,45 +114,56 @@ export async function GET(
 			return NextResponse.json(null);
 		}
 
-		// Calculate ratings
-		const ratings = currentBook.book.ratings;
-		const totalRatings = ratings.length;
-		const averageRating = totalRatings > 0
-			? ratings.reduce((sum, r) => sum + r.rating, 0) / totalRatings
-			: null;
-		const userRating = ratings.find(r => r.userId === user.id)?.rating || null;
+		// Fetch all replies for top-level comments
+		const notesWithReplies = await Promise.all(
+			currentBook.book.notes.map(async (note) => ({
+				...note,
+				comments: await Promise.all(
+					note.comments.map(async (comment) => ({
+						...comment,
+						replies: await fetchCommentReplies(comment.id),
+					}))
+				),
+			}))
+		);
 
-		return NextResponse.json({
-			id: currentBook.book.id,
-			title: currentBook.book.title,
-			subtitle: currentBook.book.subtitle,
-			pageCount: currentBook.book.pageCount,
-			categories: currentBook.book.categories,
-			textSnippet: currentBook.book.textSnippet,
-			author: currentBook.book.author,
-			imageUrl: currentBook.book.imageUrl,
-			amazonUrl: currentBook.book.amazonUrl,
-			description: currentBook.book.description,
-			startDate: currentBook.startDate,
-			endDate: currentBook.endDate,
-			averageRating,
-			totalRatings,
-			userRating,
-			notes: currentBook.book.notes.map((note) => ({
-				id: note.id,
-				content: note.content,
-				userId: note.userId,
-				bookId: note.bookId,
-				createdAt: note.createdAt,
-				user: {
-					firstName: note.user.firstName,
-					lastName: note.user.lastName,
-					clerkId: note.user.clerkId,
-				},
-			})),
+		// Calculate average rating
+		const ratings = await prisma.rating.findMany({
+			where: {
+				bookId: currentBook.bookId,
+			},
+			select: {
+				rating: true,
+			},
 		});
+
+		const averageRating =
+			ratings.length > 0
+				? ratings.reduce((acc, curr) => acc + curr.rating, 0) / ratings.length
+				: undefined;
+
+		const bookData = {
+			...currentBook.book,
+			notes: notesWithReplies,
+		};
+		const userRating = bookData.ratings[0]?.rating;
+
+		const response = {
+			...bookData,
+			averageRating,
+			totalRatings: bookData._count.ratings,
+			userRating,
+		};
+
+		return NextResponse.json(response);
 	} catch (error) {
-		console.error('[GROUPS_CURRENT_BOOK]', error);
+		console.error('Error fetching current book:', error);
+		if (error instanceof Error) {
+			console.error('Error details:', {
+				message: error.message,
+				stack: error.stack,
+			});
+		}
 		return NextResponse.json(
 			{ error: 'Failed to fetch current book' },
 			{ status: 500 }

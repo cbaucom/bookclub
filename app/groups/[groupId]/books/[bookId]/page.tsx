@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   Box,
@@ -11,6 +11,7 @@ import {
   Image,
   Stack,
   Text,
+  Textarea,
   VStack,
 } from '@chakra-ui/react';
 import { Button } from '@/components/ui/button';
@@ -22,9 +23,14 @@ import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useBook } from '@/hooks/useBook';
 import { PageState } from '@/components/ui/page-state';
 import { EditDatesModal } from '@/components/books/edit-dates-modal';
-import { useState } from 'react';
+import { NoteCard } from '@/components/books/note-card';
+import { useNotes } from '@/hooks/useNotes';
+import type { NoteWithUser } from '@/types';
+import { useAuth } from '@clerk/nextjs';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function BookPage() {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const { groupId, bookId } = useParams();
   const {
@@ -37,6 +43,21 @@ export default function BookPage() {
   const isDark = theme === 'dark';
   const { isAdmin } = useIsAdmin(groupId as string);
   const [isEditDatesModalOpen, setIsEditDatesModalOpen] = useState(false);
+  const [noteContent, setNoteContent] = useState('');
+  const { createMutation } = useNotes(bookId as string, groupId as string);
+  const { userId } = useAuth();
+
+  useEffect(() => {
+    const handleFocus = () => {
+      queryClient.invalidateQueries(); // Invalidate all queries
+    };
+
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [queryClient]);
 
   if (isLoading) {
     return <PageState isLoading />;
@@ -52,6 +73,19 @@ export default function BookPage() {
 
   const handleRate = (rating: number, review?: string) =>
     rate({ rating, review });
+
+  const handleAddNote = () => {
+    if (noteContent.trim()) {
+      createMutation.mutate(
+        { content: noteContent, bookId: bookId as string },
+        {
+          onSuccess: () => {
+            setNoteContent('');
+          },
+        }
+      );
+    }
+  };
 
   return (
     <Container mx='auto' maxW='6xl' px={4} py={8}>
@@ -242,6 +276,43 @@ export default function BookPage() {
                 </Stack>
               </Box>
             )}
+
+            {/* Notes Section */}
+            <Box mt={8}>
+              <Heading as='h2' size='md' mb={4}>
+                Notes
+              </Heading>
+              <VStack align='stretch' gap={4}>
+                <Box>
+                  <Textarea
+                    value={noteContent}
+                    onChange={(e) => setNoteContent(e.target.value)}
+                    placeholder='Add a note...'
+                    p={4}
+                    rows={3}
+                  />
+                  <Button
+                    mt={2}
+                    colorPalette='purple'
+                    onClick={handleAddNote}
+                    disabled={createMutation.isPending || !noteContent.trim()}
+                    size='xs'
+                  >
+                    {createMutation.isPending ? 'Adding...' : 'Add Note'}
+                  </Button>
+                </Box>
+
+                {book.notes?.map((note: NoteWithUser) => (
+                  <NoteCard
+                    key={note.id}
+                    note={note}
+                    groupId={groupId as string}
+                    bookId={bookId as string}
+                    userId={userId as string}
+                  />
+                ))}
+              </VStack>
+            </Box>
           </Box>
         </Stack>
       </Grid>

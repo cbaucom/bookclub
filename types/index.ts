@@ -1,4 +1,22 @@
-import { Book, Note, Group, User } from '@prisma/client';
+import { Book, Note, Group, User, Comment, Reaction } from '@prisma/client';
+
+export type UserInfo = Pick<User, 'firstName' | 'lastName' | 'clerkId'>;
+
+export interface ReactionWithUser extends Reaction {
+	user: UserInfo;
+}
+
+export interface CommentWithUser extends Comment {
+	user: UserInfo;
+	reactions: ReactionWithUser[];
+	replies?: CommentWithUser[];
+}
+
+export interface NoteWithUser extends Note {
+	user: UserInfo;
+	reactions: ReactionWithUser[];
+	comments: CommentWithUser[];
+}
 
 export interface GroupWithRole extends Group {
 	role: string;
@@ -13,10 +31,6 @@ export interface GroupWithRole extends Group {
 	};
 }
 
-export interface NoteWithUser extends Note {
-	user: User;
-}
-
 export interface BookWithRatings extends Omit<Book, 'startDate' | 'endDate'> {
 	averageRating?: number | null;
 	totalRatings?: number;
@@ -25,6 +39,13 @@ export interface BookWithRatings extends Omit<Book, 'startDate' | 'endDate'> {
 	startDate?: Date | null;
 	endDate?: Date | null;
 	notes?: NoteWithUser[];
+}
+
+export interface BookWithDetails extends Book {
+	notes: NoteWithUser[];
+	averageRating?: number;
+	totalRatings?: number;
+	userRating?: number;
 }
 
 export interface GoogleBooksResponse {

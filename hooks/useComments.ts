@@ -1,14 +1,18 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { BASE_URL } from '@/lib/constants';
-import type { Note } from '@prisma/client';
 
-interface CreateNoteData {
+interface CreateCommentData {
 	content: string;
-	bookId: string;
+	noteId: string;
+	parentId?: string;
 }
 
-async function createNote(data: CreateNoteData): Promise<Note> {
-	const response = await fetch(`${BASE_URL}/api/books/${data.bookId}/notes`, {
+interface UpdateCommentData {
+	content: string;
+}
+
+async function createComment(data: CreateCommentData) {
+	const response = await fetch(`${BASE_URL}/api/notes/${data.noteId}/comments`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -17,14 +21,15 @@ async function createNote(data: CreateNoteData): Promise<Note> {
 	});
 
 	if (!response.ok) {
-		throw new Error('Failed to create note');
+		throw new Error('Failed to create comment');
 	}
 
-	return response.json();
+	const result = await response.json();
+	return result;
 }
 
-async function updateNote(noteId: string, data: { content: string }) {
-	const response = await fetch(`${BASE_URL}/api/notes/${noteId}`, {
+async function updateComment(commentId: string, data: UpdateCommentData) {
+	const response = await fetch(`${BASE_URL}/api/comments/${commentId}`, {
 		method: 'PUT',
 		headers: {
 			'Content-Type': 'application/json',
@@ -33,50 +38,50 @@ async function updateNote(noteId: string, data: { content: string }) {
 	});
 
 	if (!response.ok) {
-		throw new Error('Failed to update note');
+		throw new Error('Failed to update comment');
 	}
 
 	return response.json();
 }
 
-async function deleteNote(noteId: string) {
-	const response = await fetch(`${BASE_URL}/api/notes/${noteId}`, {
+async function deleteComment(commentId: string) {
+	const response = await fetch(`${BASE_URL}/api/comments/${commentId}`, {
 		method: 'DELETE',
 	});
 
 	if (!response.ok) {
-		throw new Error('Failed to delete note');
+		throw new Error('Failed to delete comment');
 	}
 
 	return response.json();
 }
 
-export function useNotes(bookId: string, groupId: string) {
+export function useComments(groupId: string) {
 	const queryClient = useQueryClient();
 
 	const invalidateQueries = () => {
 		queryClient.invalidateQueries({ queryKey: ['currentBook', groupId] });
 		queryClient.invalidateQueries({ queryKey: ['books', groupId] });
-		queryClient.invalidateQueries({ queryKey: ['book', bookId, groupId] });
+		queryClient.invalidateQueries({ queryKey: ['book'] });
 	};
 
 	const createMutation = useMutation({
-		mutationFn: createNote,
+		mutationFn: createComment,
 		onSuccess: () => {
 			invalidateQueries();
 		},
 	});
 
 	const updateMutation = useMutation({
-		mutationFn: ({ noteId, data }: { noteId: string; data: { content: string } }) =>
-			updateNote(noteId, data),
+		mutationFn: ({ commentId, data }: { commentId: string; data: UpdateCommentData }) =>
+			updateComment(commentId, data),
 		onSuccess: () => {
 			invalidateQueries();
 		},
 	});
 
 	const deleteMutation = useMutation({
-		mutationFn: deleteNote,
+		mutationFn: deleteComment,
 		onSuccess: () => {
 			invalidateQueries();
 		},

@@ -14,27 +14,21 @@ import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { useCurrentBook } from '@/hooks/useBooks';
 import { useNotes } from '@/hooks/useNotes';
-import { useNoteMutations } from '@/hooks/useNoteMutations';
 import { useState } from 'react';
 import { AddBookModal } from './add-book-modal';
 import { PageState } from '@/components/ui/page-state';
 import { ReviewItem, StarRating } from '@/components/books/star-rating';
 import { useRatings } from '@/hooks/useRatings';
 import { useBookMutations } from '@/hooks/useBookMutations';
-import {
-  FaCheck,
-  FaAmazon,
-  FaTrash,
-  FaEdit,
-  FaSave,
-  FaTimes,
-} from 'react-icons/fa';
+import { FaCheck, FaAmazon, FaTrash } from 'react-icons/fa';
 import { BookDescriptionModal } from '@/components/books/book-description-modal';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { DeleteBookDialog } from './delete-book-dialog';
 import { useAuth } from '@clerk/nextjs';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LuBook } from 'react-icons/lu';
+import { NoteCard } from '@/components/books/note-card';
+import type { NoteWithUser } from '@/types';
 
 interface CurrentBookProps {
   groupId: string;
@@ -42,29 +36,24 @@ interface CurrentBookProps {
 
 export function CurrentBook({ groupId }: CurrentBookProps) {
   const { data: book, isLoading } = useCurrentBook(groupId);
-  const { rate, ratings } = useRatings(book?.id || '', groupId);
+  const bookId = book?.id ?? '';
+  const { rate, ratings } = useRatings(bookId, groupId);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const { finishMutation } = useBookMutations(book?.id || '', groupId);
+  const { finishMutation } = useBookMutations(bookId, groupId);
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const { isAdmin } = useIsAdmin(groupId);
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
   const [isAddBookModalOpen, setIsAddBookModalOpen] = useState(false);
   const [noteContent, setNoteContent] = useState('');
-  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
-  const [editingNoteContent, setEditingNoteContent] = useState('');
-  const { createMutation } = useNotes(book?.id || '', groupId);
-  const { updateMutation, deleteMutation } = useNoteMutations(
-    book?.id || '',
-    groupId
-  );
+  const { createMutation } = useNotes(bookId, groupId);
   const { userId } = useAuth();
 
   if (isLoading) {
     return <PageState isLoading />;
   }
 
-  if (!book) {
+  if (!book || !userId) {
     return (
       <EmptyState
         icon={<LuBook size={24} />}
@@ -115,42 +104,6 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
           },
         }
       );
-    }
-  };
-
-  const handleEditNote = (noteId: string) => {
-    const note = book.notes?.find((n) => n.id === noteId);
-    if (note) {
-      setEditingNoteId(noteId);
-      setEditingNoteContent(note.content);
-    }
-  };
-
-  const handleSaveEdit = () => {
-    if (editingNoteId && editingNoteContent.trim()) {
-      updateMutation.mutate(
-        {
-          noteId: editingNoteId,
-          data: { content: editingNoteContent },
-        },
-        {
-          onSuccess: () => {
-            setEditingNoteId(null);
-            setEditingNoteContent('');
-          },
-        }
-      );
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setEditingNoteId(null);
-    setEditingNoteContent('');
-  };
-
-  const handleDeleteNote = (noteId: string) => {
-    if (window.confirm('Are you sure you want to delete this note?')) {
-      deleteMutation.mutate(noteId);
     }
   };
 
@@ -302,6 +255,8 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
                 mt={4}
                 direction={{ base: 'column', sm: 'row' }}
                 width='100%'
+                flexWrap='wrap'
+                justify={{ base: 'center', md: 'flex-start' }}
               >
                 {book.amazonUrl && (
                   <Button
@@ -309,21 +264,24 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
                     colorPalette='orange'
                     color='white'
                     size='xs'
-                    width={{ base: '100%', sm: 'auto' }}
+                    width='auto'
                   >
                     <FaAmazon /> View on Amazon
                   </Button>
                 )}
                 {isAdmin && (
-                  <>
+                  <Flex
+                    gap={2}
+                    flexWrap='wrap'
+                    justify={{ base: 'center', md: 'flex-start' }}
+                  >
                     <Button
                       onClick={handleFinish}
                       colorPalette='purple'
                       size='xs'
-                      width={{ base: '100%', sm: 'auto' }}
+                      width='auto'
                       disabled={finishMutation.isPending}
                     >
-                      {' '}
                       <FaCheck />
                       {finishMutation.isPending
                         ? 'Marking as finished...'
@@ -332,7 +290,7 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
                     <Button
                       colorPalette='red'
                       onClick={() => setIsDeleteDialogOpen(true)}
-                      width={{ base: '100%', sm: 'auto' }}
+                      width='auto'
                       size='xs'
                     >
                       <FaTrash /> Delete
@@ -344,7 +302,7 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
                       onClose={() => setIsDeleteDialogOpen(false)}
                       title={book.title}
                     />
-                  </>
+                  </Flex>
                 )}
               </Flex>
             </VStack>
@@ -377,77 +335,14 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
                   </Button>
                 </Box>
 
-                {book.notes?.map((note) => (
-                  <Box
+                {book.notes?.map((note: NoteWithUser) => (
+                  <NoteCard
                     key={note.id}
-                    p={4}
-                    borderWidth={1}
-                    borderRadius='lg'
-                    bg={isDark ? 'gray.700' : 'gray.50'}
-                  >
-                    {editingNoteId === note.id ? (
-                      <Box>
-                        <Textarea
-                          value={editingNoteContent}
-                          onChange={(e) =>
-                            setEditingNoteContent(e.target.value)
-                          }
-                          rows={3}
-                          p={4}
-                        />
-                        <Flex gap={2} mt={2}>
-                          <Button
-                            colorPalette='green'
-                            onClick={handleSaveEdit}
-                            disabled={updateMutation.isPending}
-                            size='xs'
-                          >
-                            <FaSave /> Save
-                          </Button>
-                          <Button
-                            colorPalette='gray'
-                            onClick={handleCancelEdit}
-                            size='xs'
-                          >
-                            <FaTimes /> Cancel
-                          </Button>
-                        </Flex>
-                      </Box>
-                    ) : (
-                      <Box>
-                        <Flex justify='space-between' align='center' mb={2}>
-                          <Text fontWeight='medium'>
-                            {note.user.firstName} {note.user.lastName}
-                          </Text>
-                          {note.user.clerkId === userId && (
-                            <Flex gap={2}>
-                              <Button
-                                size='sm'
-                                colorPalette='blue'
-                                variant='ghost'
-                                onClick={() => handleEditNote(note.id)}
-                              >
-                                <FaEdit />
-                              </Button>
-                              <Button
-                                size='sm'
-                                colorPalette='red'
-                                variant='ghost'
-                                onClick={() => handleDeleteNote(note.id)}
-                                disabled={deleteMutation.isPending}
-                              >
-                                <FaTimes />
-                              </Button>
-                            </Flex>
-                          )}
-                        </Flex>
-                        <Text>{note.content}</Text>
-                        <Text fontSize='xs' color='gray.500' mt={2}>
-                          {new Date(note.createdAt).toLocaleDateString()}
-                        </Text>
-                      </Box>
-                    )}
-                  </Box>
+                    note={note}
+                    groupId={groupId}
+                    bookId={book.id}
+                    userId={userId}
+                  />
                 ))}
               </VStack>
             </Box>

@@ -1,13 +1,18 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { BASE_URL } from '@/lib/constants';
 
-interface UpdateNoteData {
-	content: string;
+interface ReactionTarget {
+	noteId?: string;
+	commentId?: string;
 }
 
-async function updateNote(noteId: string, data: UpdateNoteData) {
-	const response = await fetch(`${BASE_URL}/api/notes/${noteId}`, {
-		method: 'PUT',
+interface CreateReactionData extends ReactionTarget {
+	emoji: string;
+}
+
+async function createReaction(data: CreateReactionData) {
+	const response = await fetch(`${BASE_URL}/api/reactions`, {
+		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
 		},
@@ -16,51 +21,53 @@ async function updateNote(noteId: string, data: UpdateNoteData) {
 
 	if (!response.ok) {
 		const error = await response.json();
-		throw new Error(error.error || 'Failed to update note');
+		throw new Error(error.error || 'Failed to create reaction');
 	}
 
 	return response.json();
 }
 
-async function deleteNote(noteId: string) {
-	const response = await fetch(`${BASE_URL}/api/notes/${noteId}`, {
+async function deleteReaction(reactionId: string) {
+	const response = await fetch(`${BASE_URL}/api/reactions/${reactionId}`, {
 		method: 'DELETE',
+		headers: {
+			'Content-Type': 'application/json',
+		},
 	});
 
 	if (!response.ok) {
 		const error = await response.json();
-		throw new Error(error.error || 'Failed to delete note');
+		throw new Error(error.error || 'Failed to delete reaction');
 	}
 
 	return response.json();
 }
 
-export function useNoteMutations(bookId: string, groupId: string) {
+export function useReactions(groupId: string) {
 	const queryClient = useQueryClient();
 
 	const invalidateQueries = () => {
 		queryClient.invalidateQueries({ queryKey: ['currentBook', groupId] });
 		queryClient.invalidateQueries({ queryKey: ['books', groupId] });
-		queryClient.invalidateQueries({ queryKey: ['book', groupId] });
+		queryClient.invalidateQueries({ queryKey: ['book'] });
 	};
 
-	const updateMutation = useMutation({
-		mutationFn: ({ noteId, data }: { noteId: string; data: UpdateNoteData }) =>
-			updateNote(noteId, data),
+	const createMutation = useMutation({
+		mutationFn: createReaction,
 		onSuccess: () => {
 			invalidateQueries();
 		},
 	});
 
 	const deleteMutation = useMutation({
-		mutationFn: (noteId: string) => deleteNote(noteId),
+		mutationFn: deleteReaction,
 		onSuccess: () => {
 			invalidateQueries();
 		},
 	});
 
 	return {
-		updateMutation,
+		createMutation,
 		deleteMutation,
 	};
 }

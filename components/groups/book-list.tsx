@@ -193,6 +193,7 @@ function BookCard({
                         );
                       }}
                       size='sm'
+                      color='white'
                       colorPalette='orange'
                       width='fit-content'
                       mt={2}
