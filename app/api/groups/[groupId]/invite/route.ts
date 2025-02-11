@@ -82,7 +82,7 @@ export async function POST(
 			});
 
 			await resend.emails.send({
-				from: 'BookClub <onboarding@resend.dev>',
+				from: `${process.env.NEXT_PUBLIC_RESEND_FROM}`,
 				to: email,
 				subject: `You've been invited to join ${group.name} on BookClub`,
 				react: renderInvitationEmail({
