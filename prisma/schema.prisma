@@ -30,6 +30,8 @@ model User {
   Invitation      Invitation[]
   ratings         Rating[]
   Reaction        Reaction[]
+  Vote            Vote[]
+  PollOption      PollOption[]
 }
 
 model Group {
@@ -42,10 +44,11 @@ model Group {
   invitations Invitation[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+  Poll        Poll[]
 }
 
 model Book {
-  id          String        @id @default(ulid())
+  id          String        @id
   title       String
   subtitle    String?
   author      String
@@ -63,8 +66,7 @@ model Book {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   ratings     Rating[]
-
-  @@unique([title, author])
+  PollOption  PollOption[]
 }
 
 model Membership {
@@ -180,6 +182,59 @@ model Rating {
   @@index([userId])
 }
 
+model Poll {
+  id           String       @id @default(ulid())
+  title        String
+  description  String?
+  group        Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId      String
+  startDate    DateTime
+  endDate      DateTime
+  votingMethod VotingMethod
+  maxPoints    Int? // For weighted voting
+  status       PollStatus   @default(ACTIVE)
+  options      PollOption[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([groupId])
+}
+
+model PollOption {
+  id        String   @id @default(ulid())
+  poll      Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  pollId    String
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  bookId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  votes     Vote[]
+  round     Int? // For bracket-style voting
+  matchup   Int? // For bracket-style voting
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([pollId, bookId])
+  @@index([pollId])
+  @@index([bookId])
+  @@index([userId])
+}
+
+model Vote {
+  id           String     @id @default(ulid())
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  pollOption   PollOption @relation(fields: [pollOptionId], references: [id], onDelete: Cascade)
+  pollOptionId String
+  value        Int // 1/-1 for upvote/downvote, points for weighted, rank for ranked choice
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([userId, pollOptionId])
+  @@index([userId])
+  @@index([pollOptionId])
+}
+
 enum Privacy {
   PUBLIC
   PRIVATE
@@ -194,4 +249,18 @@ enum BookStatus {
   CURRENT
   PREVIOUS
   UPCOMING
+}
+
+enum VotingMethod {
+  UPVOTE_DOWNVOTE
+  WEIGHTED
+  BRACKET
+  RANKED_CHOICE
+}
+
+enum PollStatus {
+  PENDING // Before start time, can add books
+  ACTIVE // During voting period
+  COMPLETED // After end time
+  CANCELLED // Manually cancelled
 }

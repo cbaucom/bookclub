@@ -165,6 +165,7 @@ export async function POST(
 		// Create or get the book
 		const book = existingBook || await prisma.book.create({
 			data: {
+				id: data.id,
 				title: title.trim(),
 				author: author.trim(),
 				description: description?.trim(),

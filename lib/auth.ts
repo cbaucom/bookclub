@@ -1,5 +1,6 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
 import prisma from './prisma';
+import { MemberRole } from '@prisma/client';
 
 export async function getAuthenticatedUser() {
 	const { userId } = await auth();
@@ -63,4 +64,20 @@ export async function checkGroupAdmin(userId: string, groupId: string) {
 	});
 
 	return membership;
+}
+
+export async function isMemberOfGroup(
+	userId: string,
+	groupId: string,
+	role?: MemberRole
+): Promise<boolean> {
+	const membership = await prisma.membership.findFirst({
+		where: {
+			userId,
+			groupId,
+			...(role ? { role } : {}),
+		},
+	});
+
+	return !!membership;
 }

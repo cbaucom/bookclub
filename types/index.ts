@@ -1,4 +1,4 @@
-import { Book, Note, Group, User, Comment, Reaction } from '@prisma/client';
+import { Book, Note, Group, User, Comment, Reaction, PollStatus, VotingMethod, Poll } from '@prisma/client';
 
 export type UserInfo = Pick<User, 'firstName' | 'lastName' | 'clerkId' | 'imageUrl'>;
 
@@ -80,4 +80,59 @@ export interface SearchBook {
 	pageCount?: number;
 	categories?: string;
 	textSnippet?: string;
+}
+
+export interface CreatePollRequest {
+	title: string;
+	description?: string;
+	groupId: string;
+	startDate?: string;
+	endDate?: string;
+	votingMethod: VotingMethod;
+	maxPoints?: number;
+	bookIds?: Array<string>;
+	status?: PollStatus;
+}
+
+export interface UpdatePollRequest {
+	title?: string;
+	description?: string;
+	startDate?: string;
+	endDate?: string;
+	status?: PollStatus;
+}
+
+export interface VoteRequest {
+	pollOptionId: string;
+	value: number;
+}
+
+export interface PollWithOptions extends Poll {
+	options: Array<{
+		id: string;
+		pollId: string;
+		bookId: string;
+		userId: string;
+		round: number | null;
+		matchup: number | null;
+		createdAt: string;
+		updatedAt: string;
+		book: {
+			id: string;
+			title: string;
+			author: string;
+			imageUrl: string | null;
+		};
+		votes: Array<{
+			userId: string;
+			value: number;
+			user: {
+				clerkId: string;
+			};
+		}>;
+		user: {
+			id: string;
+			clerkId: string;
+		};
+	}>;
 }
