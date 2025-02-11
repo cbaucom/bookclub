@@ -36,11 +36,11 @@ export async function GET(
 // Add or update a rating
 export async function POST(
 	request: Request,
-	context: { params: { bookId: string } }
+	context: { params: Promise<{ bookId: string }> }
 ) {
 	try {
 		const user = await getAuthenticatedUser();
-		const { bookId } = context.params;
+		const { bookId } = await context.params;
 
 		if (!user) {
 			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

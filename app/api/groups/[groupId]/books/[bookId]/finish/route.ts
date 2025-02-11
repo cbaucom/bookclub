@@ -4,11 +4,11 @@ import { getAuthenticatedUser } from '@/lib/auth';
 
 export async function POST(
 	request: Request,
-	context: { params: { groupId: string; bookId: string } }
+	context: { params: Promise<{ groupId: string; bookId: string }> }
 ) {
 	try {
 		const user = await getAuthenticatedUser();
-		const { groupId, bookId } = context.params;
+		const { groupId, bookId } = await context.params;
 
 		if (!user) {
 			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

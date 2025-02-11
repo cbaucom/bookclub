@@ -6,11 +6,11 @@ import { fetchCommentReplies } from '@/lib/comments';
 
 export async function GET(
 	request: Request,
-	context: { params: { groupId: string; bookId: string } }
+	context: { params: Promise<{ groupId: string; bookId: string }> }
 ) {
 	try {
 		const user = await getAuthenticatedUser();
-		const params = context.params;
+		const { groupId, bookId } = await context.params;
 
 		if (!user) {
 			return new NextResponse('Unauthorized', { status: 401 });
@@ -19,7 +19,7 @@ export async function GET(
 		const membership = await prisma.membership.findFirst({
 			where: {
 				userId: user.id,
-				groupId: params.groupId,
+				groupId,
 			},
 		});
 
@@ -30,8 +30,8 @@ export async function GET(
 		const bookInGroup = await prisma.bookInGroup.findUnique({
 			where: {
 				bookId_groupId: {
-					bookId: params.bookId,
-					groupId: params.groupId,
+					bookId,
+					groupId,
 				},
 			},
 			include: {
@@ -151,11 +151,11 @@ export async function GET(
 
 export async function DELETE(
 	request: Request,
-	context: { params: { groupId: string; bookId: string } }
+	context: { params: Promise<{ groupId: string; bookId: string }> }
 ) {
 	try {
 		const user = await getAuthenticatedUser();
-		const params = context.params;
+		const { groupId, bookId } = await context.params;
 
 		if (!user) {
 			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -164,7 +164,7 @@ export async function DELETE(
 		const membership = await prisma.membership.findFirst({
 			where: {
 				userId: user.id,
-				groupId: params.groupId,
+				groupId,
 			},
 		});
 
@@ -178,8 +178,8 @@ export async function DELETE(
 		await prisma.bookInGroup.delete({
 			where: {
 				bookId_groupId: {
-					bookId: params.bookId,
-					groupId: params.groupId,
+					bookId,
+					groupId,
 				},
 			},
 		});

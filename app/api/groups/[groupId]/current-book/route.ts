@@ -5,12 +5,11 @@ import { fetchCommentReplies } from '@/lib/comments';
 
 export async function GET(
 	request: Request,
-	context: { params: { groupId: string } }
+	context: { params: Promise<{ groupId: string }> }
 ) {
 	try {
 		const user = await getAuthenticatedUser();
-		const params = await context.params;
-		const { groupId } = params;
+		const { groupId } = await context.params;
 
 		if (!user) {
 			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

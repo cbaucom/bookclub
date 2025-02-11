@@ -4,11 +4,11 @@ import { getAuthenticatedUser } from '@/lib/auth';
 
 export async function DELETE(
 	request: Request,
-	context: { params: { reactionId: string } }
+	context: { params: Promise<{ reactionId: string }> }
 ) {
 	try {
 		const user = await getAuthenticatedUser();
-		const { reactionId } = context.params;
+		const { reactionId } = await context.params;
 
 		if (!user) {
 			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

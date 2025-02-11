@@ -12,18 +12,20 @@ export async function fetchCommentReplies(commentId: string): Promise<CommentWit
 		include: {
 			user: {
 				select: {
-					firstName: true,
-					lastName: true,
 					clerkId: true,
+					firstName: true,
+					imageUrl: true,
+					lastName: true,
 				},
 			},
 			reactions: {
 				include: {
 					user: {
 						select: {
-							firstName: true,
-							lastName: true,
 							clerkId: true,
+							firstName: true,
+							imageUrl: true,
+							lastName: true,
 						},
 					},
 				},

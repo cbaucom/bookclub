@@ -5,14 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { Button, Container, Heading, Text, Stack } from '@chakra-ui/react';
 import { SignInButton } from '@clerk/nextjs';
+import { useParams } from 'next/navigation';
 
-interface InvitePageProps {
-  params: {
-    inviteId: string;
-  };
-}
-
-export default function InvitePage({ params: { inviteId } }: InvitePageProps) {
+export default function InvitePage() {
+  const { inviteId } = useParams();
   const [isLoading, setIsLoading] = useState(true);
   const [inviteData, setInviteData] = useState<{
     groupName: string;

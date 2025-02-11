@@ -4,7 +4,7 @@ import { getAuthenticatedUser } from '@/lib/auth';
 
 export async function POST(
 	request: Request,
-	context: { params: { noteId: string } }
+	context: { params: Promise<{ noteId: string }> }
 ) {
 	try {
 		const user = await getAuthenticatedUser();
@@ -15,7 +15,7 @@ export async function POST(
 			);
 		}
 
-		const { noteId } = context.params;
+		const { noteId } = await context.params;
 		const { content, parentId } = await request.json();
 
 		// Check if the note exists and if the user is a member of the group

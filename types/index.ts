@@ -1,4 +1,4 @@
-import { Book, Note, Group, User, Comment, Reaction, PollStatus, VotingMethod, Poll } from '@prisma/client';
+import { Book, Note, Group, User, Comment, Reaction, PollStatus, VotingMethod, Poll, PollOption as PrismaOption, Vote } from '@prisma/client';
 
 export type UserInfo = Pick<User, 'firstName' | 'lastName' | 'clerkId' | 'imageUrl'>;
 
@@ -107,32 +107,12 @@ export interface VoteRequest {
 	value: number;
 }
 
+export interface PollOption extends PrismaOption {
+	book: Book;
+	user: User;
+	votes: Array<Vote & { user: User }>;
+}
+
 export interface PollWithOptions extends Poll {
-	options: Array<{
-		id: string;
-		pollId: string;
-		bookId: string;
-		userId: string;
-		round: number | null;
-		matchup: number | null;
-		createdAt: string;
-		updatedAt: string;
-		book: {
-			id: string;
-			title: string;
-			author: string;
-			imageUrl: string | null;
-		};
-		votes: Array<{
-			userId: string;
-			value: number;
-			user: {
-				clerkId: string;
-			};
-		}>;
-		user: {
-			id: string;
-			clerkId: string;
-		};
-	}>;
+	options: PollOption[];
 }
