@@ -79,7 +79,26 @@ export function InviteModal({ groupId, isOpen, onClose }: InviteModalProps) {
   };
 
   return (
-    <DialogWrapper isOpen={isOpen} onClose={onClose} title='Invite Member'>
+    <DialogWrapper
+      isOpen={isOpen}
+      onClose={onClose}
+      title='Invite Member'
+      footer={
+        <>
+          <Button
+            colorPalette='purple'
+            onClick={handleSubmit}
+            disabled={!email || inviteMutation.isPending}
+            size='sm'
+          >
+            {inviteMutation.isPending ? 'Sending...' : 'Send Invite'}
+          </Button>
+          <Button variant='ghost' onClick={onClose} size='sm'>
+            Cancel
+          </Button>
+        </>
+      }
+    >
       <Flex direction='column' gap={4}>
         <Field label='Email address' invalid={!!error} helperText={error}>
           <Input
@@ -91,18 +110,6 @@ export function InviteModal({ groupId, isOpen, onClose }: InviteModalProps) {
             aria-invalid={!!error}
           />
         </Field>
-        <Flex justify='flex-end' gap={3} mt={4}>
-          <Button variant='ghost' onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            colorPalette='blue'
-            onClick={handleSubmit}
-            loading={inviteMutation.isPending}
-          >
-            Send Invitation
-          </Button>
-        </Flex>
       </Flex>
     </DialogWrapper>
   );

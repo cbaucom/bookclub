@@ -123,7 +123,7 @@ export function GroupHeader({ group }: GroupHeaderProps) {
                       aria-label='Save changes'
                       size='sm'
                       variant='ghost'
-                      colorScheme='green'
+                      colorPalette='green'
                     >
                       <FaCheck />
                     </Button>
@@ -176,7 +176,7 @@ export function GroupHeader({ group }: GroupHeaderProps) {
                         aria-label='Save changes'
                         size='sm'
                         variant='ghost'
-                        colorScheme='green'
+                        colorPalette='green'
                       >
                         <FaCheck />
                       </Button>

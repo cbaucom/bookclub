@@ -127,7 +127,7 @@ export function MemberList({ groupId }: MemberListProps) {
       <InviteModal
         groupId={groupId}
         isOpen={isInviteModalOpen}
-        onClose={() => setIsInviteModalOpen(false)}
+        onClose={() => setIsInviteModalOpen(!isInviteModalOpen)}
       />
     </Box>
   );

@@ -109,7 +109,7 @@ export default function InvitePage({ params: { inviteId } }: InvitePageProps) {
             sign in or create an account to accept this invitation.
           </Text>
           <SignInButton mode='modal'>
-            <Button colorScheme='blue'>Sign In to Accept Invitation</Button>
+            <Button colorPalette='blue'>Sign In to Accept Invitation</Button>
           </SignInButton>
         </Stack>
       </Container>
@@ -124,7 +124,7 @@ export default function InvitePage({ params: { inviteId } }: InvitePageProps) {
           {inviteData.inviterName} has invited you to join their group.
         </Text>
         <Button
-          colorScheme='blue'
+          colorPalette='blue'
           onClick={handleAcceptInvite}
           disabled={isLoading}
         >

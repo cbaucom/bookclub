@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { Container, Tabs, Box } from '@chakra-ui/react';
+import { Container, Box, useBreakpointValue } from '@chakra-ui/react';
 import { BookList } from '@/components/groups/book-list';
 import { CurrentBook } from '@/components/groups/current-book';
 import { GroupHeader } from '@/components/groups/group-header';
@@ -10,11 +10,20 @@ import { useGroup } from '@/hooks/useGroup';
 import { PageState } from '@/components/ui/page-state';
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { PollList } from '@/components/polls/poll-list';
+import { Tabs } from '@chakra-ui/react';
+import {
+  AccordionRoot,
+  AccordionItem,
+  AccordionItemTrigger,
+  AccordionItemContent,
+} from '@/components/ui/accordion';
 
 export default function GroupPage() {
   const queryClient = useQueryClient();
   const { groupId } = useParams();
   const { data: group, isLoading, error } = useGroup(groupId as string);
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   useEffect(() => {
     const handleFocus = () => {
@@ -40,49 +49,66 @@ export default function GroupPage() {
     return <PageState isError error={error} />;
   }
 
+  const sections = [
+    {
+      title: 'Current Book',
+      value: 'current',
+      content: <CurrentBook groupId={groupId as string} />,
+    },
+    {
+      title: 'Previous Books',
+      value: 'previous',
+      content: <BookList groupId={groupId as string} status='PREVIOUS' />,
+    },
+    {
+      title: 'Members',
+      value: 'members',
+      content: <MemberList groupId={groupId as string} />,
+    },
+    {
+      title: 'Polls',
+      value: 'polls',
+      content: <PollList groupId={groupId as string} />,
+    },
+  ];
+
   return (
     <Container mx='auto' maxW='6xl' p={4}>
       <GroupHeader group={group} />
 
       <Box mt={2}>
-        <Tabs.Root defaultValue='current'>
-          <Tabs.List gap={2} overflowX='auto' pb={2} mb={-2}>
-            <Tabs.Trigger
-              value='current'
-              px={4}
-              py={2}
-              fontSize={{ base: 'sm', md: 'md' }}
-            >
-              Current Book
-            </Tabs.Trigger>
-            <Tabs.Trigger
-              value='previous'
-              px={4}
-              py={2}
-              fontSize={{ base: 'sm', md: 'md' }}
-            >
-              Previous Books
-            </Tabs.Trigger>
-            <Tabs.Trigger
-              value='members'
-              px={4}
-              py={2}
-              fontSize={{ base: 'sm', md: 'md' }}
-            >
-              Members
-            </Tabs.Trigger>
-          </Tabs.List>
-          <Tabs.Indicator />
-          <Tabs.Content value='current' pt={6}>
-            <CurrentBook groupId={groupId as string} />
-          </Tabs.Content>
-          <Tabs.Content value='previous' pt={6}>
-            <BookList groupId={groupId as string} status='PREVIOUS' />
-          </Tabs.Content>
-          <Tabs.Content value='members' pt={6}>
-            <MemberList groupId={groupId as string} />
-          </Tabs.Content>
-        </Tabs.Root>
+        {isMobile ? (
+          <AccordionRoot>
+            {sections.map((section) => (
+              <AccordionItem key={section.value} value={section.value}>
+                <AccordionItemTrigger>{section.title}</AccordionItemTrigger>
+                <AccordionItemContent>{section.content}</AccordionItemContent>
+              </AccordionItem>
+            ))}
+          </AccordionRoot>
+        ) : (
+          <Tabs.Root defaultValue='current'>
+            <Tabs.List gap={2} overflowX='auto' pb={2} mb={-2}>
+              {sections.map((section) => (
+                <Tabs.Trigger
+                  key={section.value}
+                  value={section.value}
+                  px={4}
+                  py={2}
+                  fontSize='md'
+                >
+                  {section.title}
+                </Tabs.Trigger>
+              ))}
+            </Tabs.List>
+            <Tabs.Indicator />
+            {sections.map((section) => (
+              <Tabs.Content key={section.value} value={section.value} pt={6}>
+                {section.content}
+              </Tabs.Content>
+            ))}
+          </Tabs.Root>
+        )}
       </Box>
     </Container>
   );

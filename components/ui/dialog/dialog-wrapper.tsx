@@ -32,8 +32,8 @@ export function DialogWrapper({
   return (
     <DialogRoot
       motionPreset='slide-in-bottom'
-      onOpenChange={onClose}
       open={isOpen}
+      onOpenChange={onClose}
       placement={placement}
       role={role}
     >

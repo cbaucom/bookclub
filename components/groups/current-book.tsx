@@ -29,6 +29,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { LuBook } from 'react-icons/lu';
 import { NoteCard } from '@/components/books/note-card';
 import type { NoteWithUser } from '@/types';
+import { BookStatus } from '@prisma/client';
 
 interface CurrentBookProps {
   groupId: string;
@@ -72,6 +73,7 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
           groupId={groupId}
           isOpen={isAddBookModalOpen}
           onClose={() => setIsAddBookModalOpen(false)}
+          defaultStatus={BookStatus.CURRENT}
         />
       </EmptyState>
     );
@@ -374,6 +376,7 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
         groupId={groupId}
         isOpen={isAddBookModalOpen}
         onClose={() => setIsAddBookModalOpen(false)}
+        defaultStatus={BookStatus.CURRENT}
       />
     </Container>
   );

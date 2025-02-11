@@ -33,6 +33,7 @@ async function searchBooks(query: string): Promise<Book[]> {
 
 async function addBook(groupId: string, book: Book, status?: string) {
   const bookData = {
+    id: book.id,
     title: book.title,
     author: book.author || 'Unknown Author',
     description: book.description || '',

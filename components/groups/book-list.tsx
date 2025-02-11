@@ -230,7 +230,7 @@ function BookCard({
         bookId={book.id}
         groupId={groupId}
         isOpen={isEditDatesModalOpen}
-        onClose={() => setIsEditDatesModalOpen(false)}
+        onClose={() => setIsEditDatesModalOpen(!isEditDatesModalOpen)}
         initialStartDate={book.startDate}
         initialEndDate={book.endDate}
       />
@@ -301,7 +301,7 @@ export function BookList({ groupId, status }: BookListProps) {
         <AddBookModal
           groupId={groupId}
           isOpen={isAddBookModalOpen}
-          onClose={() => setIsAddBookModalOpen(false)}
+          onClose={() => setIsAddBookModalOpen(!isAddBookModalOpen)}
           defaultStatus={status}
         />
       </>
@@ -335,7 +335,7 @@ export function BookList({ groupId, status }: BookListProps) {
       <AddBookModal
         groupId={groupId}
         isOpen={isAddBookModalOpen}
-        onClose={() => setIsAddBookModalOpen(false)}
+        onClose={() => setIsAddBookModalOpen(!isAddBookModalOpen)}
         defaultStatus={status}
       />
     </Box>
