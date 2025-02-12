@@ -33,8 +33,8 @@ function BookCard({
   groupId: string;
 }) {
   const { rate, ratings } = useRatings(book.id, groupId);
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
   const { isAdmin } = useIsAdmin(groupId);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDatesModalOpen, setIsEditDatesModalOpen] = useState(false);

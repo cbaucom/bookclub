@@ -21,8 +21,8 @@ export default function GroupDashboardPage() {
   const { createMutation } = useGroupMutations();
   const { data: groups, isLoading, error } = useGroups();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
 
   const handleCreateGroup = (group: {
     name: string;
