@@ -18,6 +18,12 @@ export async function GET(
 		const { searchParams } = new URL(request.url);
 		const status = searchParams.get('status') || 'CURRENT';
 
+		console.log('[GROUPS_BOOKS_GET] Debug:', {
+			userId: user.id,
+			groupId,
+			status,
+		});
+
 		// Validate status
 		if (status !== 'CURRENT' && status !== 'PREVIOUS' && status !== 'UPCOMING') {
 			return NextResponse.json(
@@ -28,6 +34,12 @@ export async function GET(
 
 		// Check if user is a member of the group
 		const membership = await checkGroupMembership(user.id, groupId);
+
+		console.log('[GROUPS_BOOKS_GET] Membership:', {
+			membership,
+			userId: user.id,
+			groupId,
+		});
 
 		if (!membership) {
 			return NextResponse.json(
@@ -57,6 +69,15 @@ export async function GET(
 			orderBy: {
 				startDate: 'desc',
 			},
+		});
+
+		console.log('[GROUPS_BOOKS_GET] Books found:', {
+			count: books.length,
+			books: books.map(b => ({
+				id: b.bookId,
+				title: b.book.title,
+				status: b.status,
+			})),
 		});
 
 		// Calculate average ratings and user ratings

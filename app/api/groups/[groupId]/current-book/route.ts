@@ -15,6 +15,11 @@ export async function GET(
 			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 		}
 
+		console.log('[CURRENT_BOOK_GET] Debug:', {
+			userId: user.id,
+			groupId,
+		});
+
 		// Check if user is a member of the group
 		const membership = await prisma.membership.findFirst({
 			where: {
@@ -23,12 +28,44 @@ export async function GET(
 			},
 		});
 
+		console.log('[CURRENT_BOOK_GET] Membership:', {
+			hasMembership: !!membership,
+			userId: user.id,
+			groupId,
+		});
+
 		if (!membership) {
 			return NextResponse.json(
 				{ error: 'You are not a member of this group' },
 				{ status: 403 }
 			);
 		}
+
+		// First, let's check ALL books in this group
+		const allBooksInGroup = await prisma.bookInGroup.findMany({
+			where: {
+				groupId,
+			},
+			select: {
+				bookId: true,
+				status: true,
+				book: {
+					select: {
+						title: true,
+					},
+				},
+			},
+		});
+
+		console.log('[CURRENT_BOOK_GET] All books in group:', {
+			groupId,
+			booksCount: allBooksInGroup.length,
+			books: allBooksInGroup.map(b => ({
+				id: b.bookId,
+				title: b.book.title,
+				status: b.status,
+			})),
+		});
 
 		const currentBook = await prisma.bookInGroup.findFirst({
 			where: {
@@ -107,6 +144,12 @@ export async function GET(
 					},
 				},
 			},
+		});
+
+		console.log('[CURRENT_BOOK_GET] Current book query result:', {
+			found: !!currentBook,
+			bookId: currentBook?.bookId,
+			status: currentBook?.status,
 		});
 
 		if (!currentBook) {
