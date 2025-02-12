@@ -7,12 +7,8 @@ export async function GET(
 	context: { params: Promise<{ inviteId: string }> }
 ) {
 	try {
-		const user = await getAuthenticatedUser();
 		const { inviteId } = await context.params;
-
-		if (!user) {
-			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-		}
+		const user = await getAuthenticatedUser();
 
 		const invitation = await prisma.invitation.findUnique({
 			where: { id: inviteId },
@@ -45,7 +41,8 @@ export async function GET(
 			);
 		}
 
-		if (process.env.NODE_ENV === 'production' && invitation.email !== user.email) {
+		// Only check email match if user is authenticated
+		if (user && process.env.NODE_ENV === 'production' && invitation.email !== user.email) {
 			return NextResponse.json(
 				{ error: 'This invitation is for a different email address' },
 				{ status: 403 }
@@ -57,6 +54,7 @@ export async function GET(
 			inviterName: invitation.invitedBy.firstName
 				? `${invitation.invitedBy.firstName} ${invitation.invitedBy.lastName}`
 				: 'Someone',
+			email: invitation.email,
 		});
 	} catch (error) {
 		console.error('Failed to fetch invitation:', error);

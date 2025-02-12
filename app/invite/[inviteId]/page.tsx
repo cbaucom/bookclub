@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
+import { useUser, useClerk } from '@clerk/nextjs';
 import { Button, Container, Heading, Text, Stack } from '@chakra-ui/react';
-import { SignInButton } from '@clerk/nextjs';
 import { useParams } from 'next/navigation';
 
 export default function InvitePage() {
@@ -13,14 +12,17 @@ export default function InvitePage() {
   const [inviteData, setInviteData] = useState<{
     groupName: string;
     inviterName: string;
+    email?: string;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { isSignedIn } = useUser();
+  const { openSignUp } = useClerk();
   const router = useRouter();
 
   useEffect(() => {
     async function fetchInviteData() {
       try {
+        setIsLoading(true);
         const response = await fetch(`/api/invites/${inviteId}`);
         if (!response.ok) {
           const data = await response.json();
@@ -36,9 +38,8 @@ export default function InvitePage() {
         setIsLoading(false);
       }
     }
-
     fetchInviteData();
-  }, [inviteId]);
+  }, [inviteId, isSignedIn]); // Refetch when auth state changes
 
   const handleAcceptInvite = async () => {
     try {
@@ -101,12 +102,39 @@ export default function InvitePage() {
         <Stack gap={6}>
           <Heading size='lg'>Join {inviteData.groupName}</Heading>
           <Text>
-            {inviteData.inviterName} has invited you to join their group. Please
-            sign in or create an account to accept this invitation.
+            {inviteData.inviterName} has invited you to join their book club
+            group: <strong>{inviteData.groupName}</strong>
           </Text>
-          <SignInButton mode='modal'>
-            <Button colorPalette='blue'>Sign In to Accept Invitation</Button>
-          </SignInButton>
+          {inviteData.email && (
+            <Text color='gray.500'>
+              This invitation was sent to {inviteData.email}
+            </Text>
+          )}
+          <Button
+            colorScheme='blue'
+            onClick={() =>
+              openSignUp({
+                redirectUrl: `/invite/${inviteId}`,
+                initialValues: { emailAddress: inviteData.email },
+              })
+            }
+          >
+            Create Account to Join
+          </Button>
+          <Text fontSize='sm' color='gray.500'>
+            Already have an account?{' '}
+            <Button
+              variant='ghost'
+              colorScheme='blue'
+              onClick={() =>
+                openSignUp({
+                  redirectUrl: `/invite/${inviteId}`,
+                })
+              }
+            >
+              Sign in
+            </Button>
+          </Text>
         </Stack>
       </Container>
     );
@@ -120,7 +148,7 @@ export default function InvitePage() {
           {inviteData.inviterName} has invited you to join their group.
         </Text>
         <Button
-          colorPalette='blue'
+          colorScheme='blue'
           onClick={handleAcceptInvite}
           disabled={isLoading}
         >
