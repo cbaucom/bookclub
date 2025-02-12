@@ -26,13 +26,11 @@ export function InvitationEmail({
   return (
     <Html>
       <Head>
-        <title>BookClub Invitation</title>
         <meta name='viewport' content='width=device-width, initial-scale=1.0' />
         <meta
           name='format-detection'
           content='telephone=no, date=no, address=no'
         />
-        <meta name='x-apple-disable-message-reformatting' />
       </Head>
       <Preview>Join {groupName} on BookClub</Preview>
       <Body style={main}>
@@ -63,8 +61,11 @@ export function InvitationEmail({
   );
 }
 
-export function renderInvitationEmail(props: InvitationEmailProps) {
-  return render(<InvitationEmail {...props} />);
+export async function renderInvitationEmail(props: InvitationEmailProps) {
+  const html = render(<InvitationEmail {...props} />, {
+    pretty: true,
+  });
+  return html;
 }
 
 const main = {
@@ -82,7 +83,6 @@ const container = {
   margin: '40px auto',
   padding: '20px',
   width: '365px',
-  maxWidth: '100%',
 };
 
 const h1 = {
@@ -91,6 +91,7 @@ const h1 = {
   fontWeight: '600',
   lineHeight: '40px',
   margin: '0 0 24px',
+  textAlign: 'center' as const,
 };
 
 const text = {
@@ -102,6 +103,7 @@ const text = {
 
 const buttonContainer = {
   margin: '24px 0',
+  textAlign: 'center' as const,
 };
 
 const button = {
@@ -115,9 +117,6 @@ const button = {
   padding: '12px 24px',
   textDecoration: 'none',
   textAlign: 'center' as const,
-  msoHide: 'all',
-  msoPaddingAlt: '0px',
-  msoTextRaise: '10px',
 };
 
 const link = {
@@ -130,4 +129,5 @@ const footer = {
   fontSize: '14px',
   fontStyle: 'italic',
   margin: '32px 0 0',
+  textAlign: 'center' as const,
 };

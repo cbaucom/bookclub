@@ -81,15 +81,17 @@ export async function POST(
 				inviterName: user.firstName ? `${user.firstName} ${user.lastName}` : 'Someone',
 			});
 
+			const emailHtml = await renderInvitationEmail({
+				inviterName: user.firstName ? `${user.firstName} ${user.lastName}` : 'Someone',
+				groupName: group.name,
+				inviteLink,
+			});
+
 			await resend.emails.send({
 				from: `${process.env.NEXT_PUBLIC_RESEND_FROM}`,
 				to: email,
 				subject: `You've been invited to join ${group.name} on BookClub`,
-				react: renderInvitationEmail({
-					inviterName: user.firstName ? `${user.firstName} ${user.lastName}` : 'Someone',
-					groupName: group.name,
-					inviteLink,
-				}),
+				html: emailHtml,
 				headers: {
 					'List-Unsubscribe': `<mailto:unsubscribe@${process.env.NEXT_PUBLIC_DOMAIN}>`,
 					'X-Entity-Ref-ID': invitation.id,
