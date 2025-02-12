@@ -82,7 +82,7 @@ export async function POST(
 			});
 
 			await resend.emails.send({
-				from: `${process.env.NEXT_PUBLIC_RESEND_FROM}`,
+				from: `BookClub <${process.env.NEXT_PUBLIC_RESEND_FROM}>`,
 				to: email,
 				subject: `You've been invited to join ${group.name} on BookClub`,
 				react: renderInvitationEmail({
@@ -90,6 +90,10 @@ export async function POST(
 					groupName: group.name,
 					inviteLink,
 				}),
+				headers: {
+					'List-Unsubscribe': `<mailto:unsubscribe@${process.env.NEXT_PUBLIC_DOMAIN}>`,
+					'X-Entity-Ref-ID': invitation.id,
+				},
 			});
 
 			console.log('Email sent successfully');

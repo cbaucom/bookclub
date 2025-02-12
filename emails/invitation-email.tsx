@@ -25,7 +25,15 @@ export function InvitationEmail({
 }: InvitationEmailProps) {
   return (
     <Html>
-      <Head />
+      <Head>
+        <title>BookClub Invitation</title>
+        <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+        <meta
+          name='format-detection'
+          content='telephone=no, date=no, address=no'
+        />
+        <meta name='x-apple-disable-message-reformatting' />
+      </Head>
       <Preview>Join {groupName} on BookClub</Preview>
       <Body style={main}>
         <Container style={container}>
@@ -63,12 +71,18 @@ const main = {
   backgroundColor: '#ffffff',
   fontFamily:
     '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif',
+  margin: '0',
+  padding: '0',
 };
 
 const container = {
-  margin: '0 auto',
-  padding: '20px 0 48px',
-  maxWidth: '560px',
+  backgroundColor: '#ffffff',
+  border: '1px solid #eaeaea',
+  borderRadius: '5px',
+  margin: '40px auto',
+  padding: '20px',
+  width: '365px',
+  maxWidth: '100%',
 };
 
 const h1 = {
@@ -92,13 +106,18 @@ const buttonContainer = {
 
 const button = {
   backgroundColor: '#3182ce',
-  borderRadius: '6px',
+  borderRadius: '5px',
   color: '#fff',
+  display: 'inline-block',
   fontSize: '16px',
   fontWeight: '600',
+  lineHeight: '100%',
   padding: '12px 24px',
   textDecoration: 'none',
   textAlign: 'center' as const,
+  msoHide: 'all',
+  msoPaddingAlt: '0px',
+  msoTextRaise: '10px',
 };
 
 const link = {
