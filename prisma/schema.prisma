@@ -54,10 +54,10 @@ model Book {
   author      String
   imageUrl    String?
   amazonUrl   String?
-  description String?
+  description String?       @db.Text
   pageCount   Int?
   categories  String?
-  textSnippet String?
+  textSnippet String?       @db.Text
   groups      BookInGroup[]
   notes       Note[]
   comments    Comment[]
