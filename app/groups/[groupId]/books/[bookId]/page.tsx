@@ -39,8 +39,8 @@ export default function BookPage() {
     error,
   } = useBook(bookId as string, groupId as string);
   const { rate, ratings } = useRatings(bookId as string, groupId as string);
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
   const { isAdmin } = useIsAdmin(groupId as string);
   const [isEditDatesModalOpen, setIsEditDatesModalOpen] = useState(false);
   const [noteContent, setNoteContent] = useState('');

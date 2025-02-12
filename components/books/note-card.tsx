@@ -16,8 +16,8 @@ interface NoteCardProps {
 }
 
 export function NoteCard({ note, groupId, bookId, userId }: NoteCardProps) {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editingNoteContent, setEditingNoteContent] = useState('');
   const [commentContent, setCommentContent] = useState('');

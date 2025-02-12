@@ -23,8 +23,8 @@ export function ReviewItem({
     user: { firstName: string | null; lastName: string | null };
   };
 }) {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
 
   return (
     <Box
@@ -64,8 +64,8 @@ export function StarRating({
   userRating,
   readOnly = false,
 }: StarRatingProps): ReactElement {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [review, setReview] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);

@@ -21,8 +21,8 @@ export function CommentReply({
   userId,
   onDelete,
 }: CommentReplyProps) {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
   const [isReplying, setIsReplying] = useState(false);
   const [replyContent, setReplyContent] = useState('');
   const { createMutation } = useComments(groupId);

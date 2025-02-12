@@ -41,8 +41,8 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
   const { rate, ratings } = useRatings(bookId, groupId);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { finishMutation } = useBookMutations(bookId, groupId);
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
   const { isAdmin } = useIsAdmin(groupId);
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
   const [isAddBookModalOpen, setIsAddBookModalOpen] = useState(false);
