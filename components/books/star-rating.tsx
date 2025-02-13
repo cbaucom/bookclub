@@ -146,6 +146,7 @@ export function StarRating({
       {onRate && !readOnly && (
         <Box mt={2}>
           <Button
+            colorPalette='purple'
             size='sm'
             variant='outline'
             onClick={(e) => {
@@ -197,7 +198,7 @@ export function StarRating({
               }}
               placeholder='Write your review (optional)'
               rows={4}
-              size='md'
+              size='lg'
               value={review}
               _hover={{
                 borderColor: isDark ? 'gray.500' : 'gray.300',

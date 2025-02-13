@@ -102,12 +102,13 @@ export function InviteModal({ groupId, isOpen, onClose }: InviteModalProps) {
       <Flex direction='column' gap={4}>
         <Field label='Email address' invalid={!!error} helperText={error}>
           <Input
+            aria-invalid={!!error}
+            onChange={handleEmailChange}
             padding={2}
+            placeholder='Enter email address'
+            size='lg'
             type='email'
             value={email}
-            onChange={handleEmailChange}
-            placeholder='Enter email address'
-            aria-invalid={!!error}
           />
         </Field>
       </Flex>

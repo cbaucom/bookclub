@@ -104,8 +104,9 @@ export default function DiscoverPage() {
           <Flex gap={4}>
             <Input
               placeholder='Enter group ID'
-              value={groupIdInput}
               onChange={(e) => setGroupIdInput(e.target.value)}
+              size='lg'
+              value={groupIdInput}
             />
             <Button
               colorPalette='blue'
@@ -126,6 +127,7 @@ export default function DiscoverPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             mb={4}
+            size='lg'
           />
 
           {isLoading ? (

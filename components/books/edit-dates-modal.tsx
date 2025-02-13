@@ -121,16 +121,18 @@ export function EditDatesModal({
       <Box>
         <Field label='Start Date'>
           <Input
+            onChange={(e) => setStartDate(e.target.value)}
+            size='lg'
             type='date'
             value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
           />
         </Field>
         <Field label='End Date'>
           <Input
+            onChange={(e) => setEndDate(e.target.value)}
+            size='lg'
             type='date'
             value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
           />
         </Field>
       </Box>

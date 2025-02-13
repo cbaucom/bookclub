@@ -14,9 +14,10 @@ export function BookSearch({ onSelect, selectedBookIds }: BookSearchProps) {
   return (
     <Stack gap={2}>
       <Input
-        placeholder='Search for books...'
-        value={query}
         onChange={(e) => setQuery(e.target.value)}
+        placeholder='Search for books...'
+        size='lg'
+        value={query}
       />
 
       {isLoading && <Text>Loading...</Text>}

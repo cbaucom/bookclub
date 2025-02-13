@@ -111,7 +111,7 @@ export function AddBookModal({
 
   return (
     <DialogWrapper isOpen={isOpen} onClose={onClose} title='Add a Book'>
-      <VStack gap={4}>
+      <VStack gap={4} w='100%' maxW='100%' overflow='hidden'>
         <Box width='100%'>
           <Input
             onChange={handleSearch}
@@ -125,7 +125,7 @@ export function AddBookModal({
 
         {isLoading && <Text>Searching...</Text>}
 
-        <VStack gap={4} width='100%'>
+        <VStack gap={4} width='100%' maxW='100%' overflow='hidden'>
           {books.map((book) => (
             <Box
               key={book.id}
@@ -134,8 +134,9 @@ export function AddBookModal({
               borderRadius='md'
               _hover={{ borderColor: 'purple.500' }}
               width='100%'
+              maxW='100%'
             >
-              <Flex gap={4}>
+              <Flex gap={4} flexWrap={{ base: 'wrap', sm: 'nowrap' }}>
                 {book.imageUrl && (
                   <Image
                     src={book.imageUrl}
@@ -144,16 +145,18 @@ export function AddBookModal({
                     height='90px'
                     objectFit='cover'
                     borderRadius='md'
+                    flexShrink={0}
                   />
                 )}
-                <Box flex='1'>
+                <Box flex='1' minW={0}>
                   <Heading size='md'>{book.title}</Heading>
                   <Text color='fg.muted' fontSize='sm'>
                     by {book.author}
                   </Text>
                   {book.description && (
                     <Text color='fg.muted' fontSize='sm' mt={2}>
-                      {book.description}
+                      {book.description.slice(0, 150)}
+                      {book.description.length > 150 && '...'}
                     </Text>
                   )}
                   <Button

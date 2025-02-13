@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   Box,
@@ -102,6 +102,8 @@ export default function BookPage() {
         <Box>
           {book.imageUrl && (
             <Box
+              maxW={{ base: '200px', md: '300px' }}
+              mx={{ base: 'auto', md: '0' }}
               position='relative'
               borderRadius='lg'
               overflow='hidden'
@@ -224,10 +226,11 @@ export default function BookPage() {
 
             {isAdmin && book.status === 'PREVIOUS' && (
               <Button
-                colorPalette='blue'
-                variant='ghost'
+                colorPalette='purple'
                 onClick={() => setIsEditDatesModalOpen(true)}
                 mb={6}
+                size='sm'
+                variant='outline'
               >
                 Edit Dates
               </Button>
@@ -290,13 +293,15 @@ export default function BookPage() {
                     placeholder='Add a note...'
                     p={4}
                     rows={3}
+                    size='lg'
                   />
                   <Button
                     mt={2}
                     colorPalette='purple'
                     onClick={handleAddNote}
                     disabled={createMutation.isPending || !noteContent.trim()}
-                    size='xs'
+                    size='sm'
+                    variant='outline'
                   >
                     {createMutation.isPending ? 'Adding...' : 'Add Note'}
                   </Button>

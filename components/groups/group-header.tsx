@@ -101,7 +101,7 @@ export function GroupHeader({ group }: GroupHeaderProps) {
                   {nameValue}
                 </Heading>
               </Editable.Preview>
-              <Editable.Input />
+              <Editable.Input fontSize='16px' />
               {group.role === 'ADMIN' && (
                 <Editable.Control>
                   <Editable.EditTrigger asChild>
@@ -150,7 +150,7 @@ export function GroupHeader({ group }: GroupHeaderProps) {
                     {descriptionValue}
                   </Text>
                 </Editable.Preview>
-                <Editable.Input />
+                <Editable.Input fontSize='16px' />
                 {group.role === 'ADMIN' && (
                   <Editable.Control>
                     <Editable.EditTrigger asChild>

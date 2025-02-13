@@ -160,9 +160,10 @@ export function EditPollModal({
             <Text mb={2}>Title *</Text>
             <Input
               name='title'
-              value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
+              size='lg'
+              value={title}
             />
           </Stack>
 
@@ -170,8 +171,9 @@ export function EditPollModal({
             <Text mb={2}>Description</Text>
             <Textarea
               name='description'
-              value={description}
               onChange={(e) => setDescription(e.target.value)}
+              size='lg'
+              value={description}
             />
           </Stack>
 
@@ -179,9 +181,10 @@ export function EditPollModal({
             <Text mb={2}>Start Date</Text>
             <Input
               name='startDate'
+              onChange={(e) => setStartDate(e.target.value)}
+              size='lg'
               type='datetime-local'
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
             />
           </Stack>
 
@@ -189,9 +192,10 @@ export function EditPollModal({
             <Text mb={2}>End Date (required for activation)</Text>
             <Input
               name='endDate'
+              onChange={(e) => setEndDate(e.target.value)}
+              size='lg'
               type='datetime-local'
               value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
             />
           </Stack>
         </Stack>

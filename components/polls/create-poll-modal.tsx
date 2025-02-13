@@ -153,6 +153,7 @@ export function CreatePollModal({
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
+                  size='lg'
                 />
               </Stack>
 
@@ -163,6 +164,7 @@ export function CreatePollModal({
                   placeholder='Add some context about this poll...'
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
+                  size='lg'
                 />
               </Stack>
 
@@ -173,6 +175,7 @@ export function CreatePollModal({
                   type='datetime-local'
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
+                  size='lg'
                 />
               </Stack>
 
@@ -183,6 +186,7 @@ export function CreatePollModal({
                   type='datetime-local'
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
+                  size='lg'
                 />
               </Stack>
 
@@ -234,6 +238,7 @@ export function CreatePollModal({
                     min='1'
                     value={maxPoints}
                     onChange={(e) => setMaxPoints(e.target.value)}
+                    size='lg'
                   />
                   <Text fontSize='sm' color='gray.500'>
                     Each member can distribute up to this many points across all

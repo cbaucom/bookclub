@@ -67,13 +67,14 @@ export function CreateGroupDialog({
             <Text mb={2}>Group Name</Text>
             <Input
               name='name'
-              padding='4'
-              value={newGroup.name}
               onChange={(e) =>
                 setNewGroup({ ...newGroup, name: e.target.value })
               }
+              padding='4'
               placeholder='Enter group name'
               required
+              size='lg'
+              value={newGroup.name}
             />
           </Box>
 
@@ -81,12 +82,13 @@ export function CreateGroupDialog({
             <Text mb={2}>Description</Text>
             <Input
               name='description'
-              padding='4'
-              value={newGroup.description}
               onChange={(e) =>
                 setNewGroup({ ...newGroup, description: e.target.value })
               }
+              padding='4'
               placeholder='Enter group description'
+              size='lg'
+              value={newGroup.description}
             />
           </Box>
 
@@ -94,7 +96,6 @@ export function CreateGroupDialog({
             <Text mb={2}>Privacy</Text>
             <select
               name='privacy'
-              value={newGroup.privacy}
               onChange={(e) =>
                 setNewGroup({
                   ...newGroup,
@@ -107,6 +108,7 @@ export function CreateGroupDialog({
                 borderWidth: '1px',
                 borderRadius: '0.375rem',
               }}
+              value={newGroup.privacy}
             >
               <option value='PUBLIC'>Public</option>
               <option value='PRIVATE'>Private</option>
