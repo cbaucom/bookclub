@@ -11,8 +11,35 @@ interface Rating {
 	rating: number;
 	review?: string | null;
 	user: {
+		id: string;
+		clerkId: string;
 		firstName: string | null;
 		lastName: string | null;
+	};
+}
+
+interface RatingStats {
+	userRating: number | null;
+	averageRating: number | null;
+	totalRatings: number;
+}
+
+function calculateRatingStats(ratings: Rating[] | undefined, userId: string | null): RatingStats {
+	if (!ratings?.length) {
+		return {
+			userRating: null,
+			averageRating: null,
+			totalRatings: 0,
+		};
+	}
+
+	const latestRating = ratings.find((r) => r.user.clerkId === userId);
+	const averageRating = ratings.reduce((acc, r) => acc + r.rating, 0) / ratings.length;
+
+	return {
+		userRating: latestRating?.rating ?? null,
+		averageRating,
+		totalRatings: ratings.length,
 	};
 }
 
@@ -91,5 +118,6 @@ export function useRatings(bookId: string, groupId: string) {
 		rate,
 		isPending,
 		ratings,
+		calculateRatingStats,
 	};
 }

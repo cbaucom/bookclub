@@ -93,6 +93,7 @@ export function NoteCard({ note, groupId, bookId, userId }: NoteCardProps) {
             onChange={(e) => setEditingNoteContent(e.target.value)}
             rows={3}
             p={4}
+            size='lg'
           />
           <Flex gap={2} mt={2}>
             <Button
@@ -166,7 +167,7 @@ export function NoteCard({ note, groupId, bookId, userId }: NoteCardProps) {
           <Box mt={2}>
             <Textarea
               placeholder='Add a comment...'
-              size='sm'
+              size='lg'
               rows={2}
               value={commentContent}
               onChange={(e) => setCommentContent(e.target.value)}

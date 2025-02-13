@@ -24,6 +24,7 @@ import { DeleteBookDialog } from './delete-book-dialog';
 import { EditDatesModal } from '@/components/books/edit-dates-modal';
 import { EmptyState } from '@/components/ui/empty-state';
 import Link from 'next/link';
+import { useAuth } from '@clerk/nextjs';
 
 function BookCard({
   book,
@@ -32,12 +33,21 @@ function BookCard({
   book: BookWithRatings;
   groupId: string;
 }) {
-  const { rate, ratings } = useRatings(book.id, groupId);
+  const { rate, ratings, calculateRatingStats } = useRatings(book.id, groupId);
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
   const { isAdmin } = useIsAdmin(groupId);
+  const { userId } = useAuth();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDatesModalOpen, setIsEditDatesModalOpen] = useState(false);
+
+  const { userRating, averageRating, totalRatings } = calculateRatingStats(
+    ratings,
+    userId || null
+  );
+  const currentRating = userRating ?? book.userRating;
+  const currentAverageRating = averageRating ?? book.averageRating;
+  const currentTotalRatings = totalRatings || book.totalRatings || 0;
 
   const handleRate = (rating: number, review?: string) =>
     rate({ rating, review });
@@ -134,11 +144,11 @@ function BookCard({
 
                   <Box>
                     <StarRating
-                      averageRating={book.averageRating}
+                      averageRating={currentAverageRating}
                       onRate={handleRate}
                       size='sm'
-                      totalRatings={book.totalRatings}
-                      userRating={book.userRating}
+                      totalRatings={currentTotalRatings}
+                      userRating={currentRating}
                     />
                   </Box>
 

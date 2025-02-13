@@ -38,7 +38,7 @@ interface CurrentBookProps {
 export function CurrentBook({ groupId }: CurrentBookProps) {
   const { data: book, isLoading } = useCurrentBook(groupId);
   const bookId = book?.id ?? '';
-  const { rate, ratings } = useRatings(bookId, groupId);
+  const { rate, ratings, calculateRatingStats } = useRatings(bookId, groupId);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { finishMutation } = useBookMutations(bookId, groupId);
   const { resolvedTheme } = useTheme();
@@ -78,6 +78,14 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
       </EmptyState>
     );
   }
+
+  const { userRating, averageRating, totalRatings } = calculateRatingStats(
+    ratings,
+    userId
+  );
+  const currentRating = userRating ?? book.userRating;
+  const currentAverageRating = averageRating ?? book.averageRating;
+  const currentTotalRatings = totalRatings || book.totalRatings || 0;
 
   const handleRate = (rating: number, review?: string) =>
     rate({ rating, review });
@@ -244,11 +252,11 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
 
               <Box width='100%'>
                 <StarRating
-                  averageRating={book.averageRating}
+                  averageRating={currentAverageRating}
                   onRate={handleRate}
                   size='lg'
-                  totalRatings={book.totalRatings}
-                  userRating={book.userRating}
+                  totalRatings={currentTotalRatings}
+                  userRating={currentRating}
                 />
               </Box>
 
@@ -325,6 +333,7 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
                     placeholder='Add a note...'
                     p={4}
                     rows={3}
+                    size='lg'
                   />
                   <Button
                     mt={2}
