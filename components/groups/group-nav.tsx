@@ -16,9 +16,12 @@ interface GroupNavProps {
 
 export function GroupNav({ groupId }: GroupNavProps) {
   const pathname = usePathname();
-  const bg = useColorModeValue('white', 'gray.800');
+  const bg = useColorModeValue('white', 'black');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
-  const activeBg = useColorModeValue('purple.50', 'purple.900');
+  const activeBg = useColorModeValue('purple.50', 'purple.700');
+  const activeColor = useColorModeValue('purple.600', 'purple.100');
+  const hoverBg = useColorModeValue('purple.50', 'purple.700');
+  const inactiveColor = useColorModeValue('gray.600', 'whiteAlpha.900');
 
   const sections = [
     {
@@ -83,7 +86,7 @@ export function GroupNav({ groupId }: GroupNavProps) {
               <Button
                 alignItems='center'
                 bg={pathname === section.href ? activeBg : 'transparent'}
-                color={pathname === section.href ? 'purple.500' : undefined}
+                color={pathname === section.href ? activeColor : inactiveColor}
                 colorPalette='purple'
                 display='flex'
                 fontWeight={pathname === section.href ? 'bold' : 'normal'}
@@ -93,12 +96,13 @@ export function GroupNav({ groupId }: GroupNavProps) {
                 variant='ghost'
                 width={{ base: 'full', md: 'auto' }}
                 _hover={{
-                  bg: pathname === section.href ? activeBg : 'purple.50',
+                  bg: pathname === section.href ? activeBg : hoverBg,
+                  color: activeColor,
                 }}
               >
                 <Box
                   as={section.icon}
-                  color={pathname === section.href ? 'purple.500' : 'inherit'}
+                  color={pathname === section.href ? activeColor : 'inherit'}
                 />
                 {section.title}
               </Button>
