@@ -4,7 +4,9 @@ import { MemberRole } from '@prisma/client';
 
 export async function getAuthenticatedUser() {
 	try {
+		console.log('[AUTH] Starting getAuthenticatedUser');
 		const { userId } = await auth();
+		console.log('[AUTH] Clerk userId:', userId);
 
 		if (!userId) {
 			console.log('[AUTH] No userId found');
@@ -12,12 +14,20 @@ export async function getAuthenticatedUser() {
 		}
 
 		const clerkUser = await currentUser();
+		console.log('[AUTH] Clerk user:', {
+			id: clerkUser?.id,
+			hasEmail: !!clerkUser?.emailAddresses?.length,
+			username: clerkUser?.username
+		});
+
 		if (!clerkUser) {
 			console.log('[AUTH] No Clerk user found');
 			return null;
 		}
 
 		const email = clerkUser.emailAddresses[0]?.emailAddress;
+		console.log('[AUTH] User email:', email);
+
 		if (!email) {
 			console.log('[AUTH] No email found for user');
 			return null;
@@ -28,10 +38,24 @@ export async function getAuthenticatedUser() {
 			where: { clerkId: userId },
 		});
 
+		console.log('[AUTH] DB user by clerkId:', {
+			found: !!dbUser,
+			id: dbUser?.id,
+			email: dbUser?.email,
+			username: dbUser?.username
+		});
+
 		// If no user found by clerkId, try to find by email
 		if (!dbUser) {
 			dbUser = await prisma.user.findUnique({
 				where: { email },
+			});
+
+			console.log('[AUTH] DB user by email:', {
+				found: !!dbUser,
+				id: dbUser?.id,
+				email: dbUser?.email,
+				username: dbUser?.username
 			});
 
 			// If user exists with email but different clerkId, update the clerkId
@@ -43,6 +67,8 @@ export async function getAuthenticatedUser() {
 						clerkId: userId,
 						firstName: clerkUser.firstName ?? '',
 						lastName: clerkUser.lastName ?? '',
+						imageUrl: clerkUser.imageUrl,
+						username: clerkUser.username,
 					},
 				});
 			} else {
@@ -54,6 +80,8 @@ export async function getAuthenticatedUser() {
 						email,
 						firstName: clerkUser.firstName ?? '',
 						lastName: clerkUser.lastName ?? '',
+						imageUrl: clerkUser.imageUrl,
+						username: clerkUser.username,
 					},
 				});
 			}
@@ -66,13 +94,26 @@ export async function getAuthenticatedUser() {
 					email,
 					firstName: clerkUser.firstName ?? '',
 					lastName: clerkUser.lastName ?? '',
+					imageUrl: clerkUser.imageUrl,
+					username: clerkUser.username,
 				},
 			});
 		}
 
+		console.log('[AUTH] Final DB user:', {
+			id: dbUser.id,
+			email: dbUser.email,
+			clerkId: dbUser.clerkId,
+			username: dbUser.username
+		});
+
 		return dbUser;
 	} catch (error) {
 		console.error('[AUTH] Error in getAuthenticatedUser:', error instanceof Error ? error.message : 'Unknown error');
+		console.error('[AUTH] Error details:', {
+			name: error instanceof Error ? error.name : 'Unknown',
+			stack: error instanceof Error ? error.stack : undefined,
+		});
 		return null;
 	}
 }

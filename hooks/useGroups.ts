@@ -10,7 +10,8 @@ export function useGroups() {
 		queryFn: async () => {
 			const response = await fetch('/api/groups');
 			if (!response.ok) {
-				throw new Error('Failed to fetch groups');
+				const error = await response.json();
+				throw new Error(error.message || 'Failed to fetch groups');
 			}
 			return response.json();
 		},
