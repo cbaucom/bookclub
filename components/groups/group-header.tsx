@@ -10,10 +10,16 @@ import {
 } from '@chakra-ui/react';
 import type { GroupWithRole } from '@/types';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useGroupMutations } from '@/hooks/useGroupMutations';
 import { DialogWrapper } from '@/components/ui/dialog/dialog-wrapper';
-import { FaCheck, FaPencilAlt, FaTrash, FaTimes } from 'react-icons/fa';
+import {
+  FaCheck,
+  FaPencilAlt,
+  FaTrash,
+  FaTimes,
+  FaChevronLeft,
+} from 'react-icons/fa';
 import { Button } from '@/components/ui/button';
 
 interface GroupHeaderProps {
@@ -22,12 +28,16 @@ interface GroupHeaderProps {
 
 export function GroupHeader({ group }: GroupHeaderProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [nameValue, setNameValue] = useState(group.name);
   const [descriptionValue, setDescriptionValue] = useState(
     group.description || ''
   );
   const { deleteMutation, updateMutation, leaveMutation } = useGroupMutations();
+
+  // Don't show back button on the main group page
+  const showBackButton = pathname !== `/groups/${group.id}`;
 
   // Update local state when group prop changes
   useEffect(() => {
@@ -87,6 +97,25 @@ export function GroupHeader({ group }: GroupHeaderProps) {
         gap={{ base: 4, md: 8 }}
       >
         <Box flex='1'>
+          {/* Desktop back button */}
+          <Flex
+            align='center'
+            gap={2}
+            mb={2}
+            display={{ base: 'none', md: 'flex' }}
+          >
+            {showBackButton && (
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={() => router.push(`/groups/${group.id}`)}
+              >
+                <Box as={FaChevronLeft} mr={2} />
+                Back to Group
+              </Button>
+            )}
+          </Flex>
+
           <Editable.Root
             disabled={group.role !== 'ADMIN'}
             onValueChange={(details) => setNameValue(details.value)}
@@ -226,6 +255,19 @@ export function GroupHeader({ group }: GroupHeaderProps) {
         </Box>
       </Flex>
 
+      {/* Mobile back button */}
+      {showBackButton && (
+        <Box mt={4} display={{ base: 'block', md: 'none' }}>
+          <Button
+            variant='ghost'
+            size='sm'
+            onClick={() => router.push(`/groups/${group.id}`)}
+          >
+            <Box as={FaChevronLeft} mr={2} />
+            Back to Group
+          </Button>
+        </Box>
+      )}
       <DialogWrapper
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
