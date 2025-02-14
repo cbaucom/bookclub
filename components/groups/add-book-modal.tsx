@@ -11,24 +11,16 @@ import {
 import { Button } from '@/components/ui/button';
 import { DialogWrapper } from '@/components/ui/dialog/dialog-wrapper';
 import { toaster } from '@/components/ui/toaster';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Book } from '@prisma/client';
 import { BASE_URL } from '@/lib/constants';
+import { useBookSearch } from '@/hooks/useBookSearch';
 
 interface AddBookModalProps {
   groupId: string;
   isOpen: boolean;
   onClose: () => void;
   defaultStatus?: 'CURRENT' | 'PREVIOUS' | 'UPCOMING';
-}
-
-async function searchBooks(query: string): Promise<Book[]> {
-  if (!query) return [];
-  const response = await fetch(
-    `/api/books/search?q=${encodeURIComponent(query)}`
-  );
-  if (!response.ok) throw new Error('Failed to search books');
-  return response.json();
 }
 
 async function addBook(groupId: string, book: Book, status?: string) {
@@ -71,18 +63,15 @@ export function AddBookModal({
 }: AddBookModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const queryClient = useQueryClient();
-
-  const { data: books = [], isLoading } = useQuery({
-    queryKey: ['book-search', searchQuery],
-    queryFn: () => searchBooks(searchQuery),
-    enabled: searchQuery.length > 0,
-  });
+  const { data: books = [], isLoading } = useBookSearch(searchQuery);
 
   const addBookMutation = useMutation({
     mutationFn: (book: Book) => addBook(groupId, book, defaultStatus),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['books', groupId] });
       queryClient.invalidateQueries({ queryKey: ['currentBook', groupId] });
+      // Clear the search cache when a book is added
+      queryClient.removeQueries({ queryKey: ['books', 'search'] });
       onClose();
       setSearchQuery('');
       toaster.create({
@@ -109,8 +98,15 @@ export function AddBookModal({
     addBookMutation.mutate(book);
   };
 
+  // Clear search results when modal is closed
+  const handleClose = () => {
+    queryClient.removeQueries({ queryKey: ['books', 'search'] });
+    setSearchQuery('');
+    onClose();
+  };
+
   return (
-    <DialogWrapper isOpen={isOpen} onClose={onClose} title='Add a Book'>
+    <DialogWrapper isOpen={isOpen} onClose={handleClose} title='Add a Book'>
       <VStack gap={4} w='100%' maxW='100%' overflow='hidden'>
         <Box width='100%'>
           <Input
