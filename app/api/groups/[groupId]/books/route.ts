@@ -135,7 +135,7 @@ export async function POST(
 
 		const data = await request.json();
 
-		const { title, author, description, imageUrl, amazonUrl, status, subtitle, pageCount, categories, textSnippet } = data;
+		const { title, author, description, imageUrl, amazonUrl, status, subtitle, pageCount, categories, textSnippet, googleBooksId } = data;
 
 		if (!title || !author) {
 			return NextResponse.json(
@@ -154,15 +154,24 @@ export async function POST(
 			);
 		}
 
-		// First, try to find an existing book
+		// First, try to find an existing book by Google Books ID or title/author
 		const existingBook = await prisma.book.findFirst({
 			where: {
-				title: {
-					equals: title.trim(),
-				},
-				author: {
-					equals: author.trim(),
-				},
+				OR: [
+					{
+						id: googleBooksId,
+					},
+					{
+						AND: {
+							title: {
+								equals: title.trim(),
+							},
+							author: {
+								equals: author.trim(),
+							},
+						},
+					},
+				],
 			},
 		});
 

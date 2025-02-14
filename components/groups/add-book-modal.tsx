@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { DialogWrapper } from '@/components/ui/dialog/dialog-wrapper';
 import { toaster } from '@/components/ui/toaster';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Book } from '@prisma/client';
+import type { SearchBook } from '@/types';
 import { BASE_URL } from '@/lib/constants';
 import { useBookSearch } from '@/hooks/useBookSearch';
 
@@ -23,9 +23,9 @@ interface AddBookModalProps {
   defaultStatus?: 'CURRENT' | 'PREVIOUS' | 'UPCOMING';
 }
 
-async function addBook(groupId: string, book: Book, status?: string) {
+async function addBook(groupId: string, book: SearchBook, status?: string) {
   const bookData = {
-    id: book.id,
+    id: book.googleBooksId,
     title: book.title,
     author: book.author || 'Unknown Author',
     description: book.description || '',
@@ -66,7 +66,7 @@ export function AddBookModal({
   const { data: books = [], isLoading } = useBookSearch(searchQuery);
 
   const addBookMutation = useMutation({
-    mutationFn: (book: Book) => addBook(groupId, book, defaultStatus),
+    mutationFn: (book: SearchBook) => addBook(groupId, book, defaultStatus),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['books', groupId] });
       queryClient.invalidateQueries({ queryKey: ['currentBook', groupId] });
@@ -94,7 +94,7 @@ export function AddBookModal({
     setSearchQuery(e.target.value);
   };
 
-  const handleAddBook = (book: Book) => {
+  const handleAddBook = (book: SearchBook) => {
     addBookMutation.mutate(book);
   };
 
@@ -124,7 +124,7 @@ export function AddBookModal({
         <VStack gap={4} width='100%' maxW='100%' overflow='hidden'>
           {books.map((book) => (
             <Box
-              key={book.id}
+              key={book.googleBooksId}
               p={4}
               borderWidth={1}
               borderRadius='md'

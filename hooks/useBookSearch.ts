@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { BASE_URL } from '@/lib/constants';
-import type { Book } from '@prisma/client';
+import type { SearchBook } from '@/types';
 
-async function searchBooks(query: string): Promise<Book[]> {
+async function searchBooks(query: string): Promise<SearchBook[]> {
 	if (!query) return [];
 	const response = await fetch(`${BASE_URL}/api/books/search?q=${encodeURIComponent(query)}`);
 	if (!response.ok) {
@@ -12,7 +12,7 @@ async function searchBooks(query: string): Promise<Book[]> {
 }
 
 export function useBookSearch(query: string) {
-	return useQuery<Book[], Error>({
+	return useQuery<SearchBook[], Error>({
 		queryKey: ['books', 'search', query],
 		queryFn: () => searchBooks(query),
 		enabled: Boolean(query),
