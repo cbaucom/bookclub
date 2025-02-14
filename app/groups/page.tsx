@@ -14,8 +14,11 @@ import { FaBook, FaLock, FaUsers } from 'react-icons/fa';
 import { LuUsers } from 'react-icons/lu';
 import { useTheme } from 'next-themes';
 import { EmptyState } from '@/components/ui/empty-state';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 
 export default function GroupDashboardPage() {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const { isLoaded, isSignedIn } = useAuth();
   const { createMutation } = useGroupMutations();
@@ -35,6 +38,18 @@ export default function GroupDashboardPage() {
       },
     });
   };
+
+  useEffect(() => {
+    const handleFocus = () => {
+      queryClient.invalidateQueries(); // Invalidate all queries
+    };
+
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [queryClient]);
 
   if (!isLoaded || isLoading) {
     return (

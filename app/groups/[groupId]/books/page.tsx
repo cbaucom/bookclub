@@ -7,10 +7,25 @@ import { GroupHeader } from '@/components/groups/group-header';
 import { useGroup } from '@/hooks/useGroup';
 import { PageState } from '@/components/ui/page-state';
 import { GroupNav } from '@/components/groups/group-nav';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 
 export default function BooksPage() {
+  const queryClient = useQueryClient();
   const { groupId } = useParams();
   const { data: group, isLoading, error } = useGroup(groupId as string);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      queryClient.invalidateQueries(); // Invalidate all queries
+    };
+
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [queryClient]);
 
   if (isLoading) {
     return <PageState isLoading />;

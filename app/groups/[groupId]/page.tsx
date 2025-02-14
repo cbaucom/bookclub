@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import {
   Container,
@@ -9,6 +10,7 @@ import {
   Text,
   Stack,
 } from '@chakra-ui/react';
+import { useQueryClient } from '@tanstack/react-query';
 import { GroupHeader } from '@/components/groups/group-header';
 import { useGroup } from '@/hooks/useGroup';
 import { PageState } from '@/components/ui/page-state';
@@ -16,8 +18,21 @@ import Link from 'next/link';
 import { LuBook, LuBookOpen, LuUsers, LuVote } from 'react-icons/lu';
 
 export default function GroupPage() {
+  const queryClient = useQueryClient();
   const { groupId } = useParams();
   const { data: group, isLoading, error } = useGroup(groupId as string);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      queryClient.invalidateQueries(); // Invalidate all queries
+    };
+
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [queryClient]);
 
   if (isLoading) {
     return <PageState isLoading />;
