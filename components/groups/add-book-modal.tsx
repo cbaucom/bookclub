@@ -25,8 +25,7 @@ interface AddBookModalProps {
 
 async function addBook(groupId: string, book: SearchBook, status?: string) {
   const bookData = {
-    googleBooksId: book.googleBooksId,
-    id: book.googleBooksId,
+    id: book.id,
     title: book.title,
     author: book.author || 'Unknown Author',
     description: book.description || '',
@@ -127,7 +126,7 @@ export function AddBookModal({
         <VStack gap={4} width='100%' maxW='100%' overflow='hidden'>
           {books.map((book) => (
             <Box
-              key={book.googleBooksId}
+              key={book.id}
               p={4}
               borderWidth={1}
               borderRadius='md'

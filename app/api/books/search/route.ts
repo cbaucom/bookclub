@@ -31,7 +31,7 @@ export async function GET(request: Request) {
 
 		const books = data.items?.map((item) => {
 			return ({
-				googleBooksId: item.id,
+				id: item.id,
 				title: item.volumeInfo.title,
 				subtitle: item.volumeInfo.subtitle,
 				author: item.volumeInfo.authors?.[0] || 'Unknown Author',

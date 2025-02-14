@@ -25,22 +25,18 @@ export function BookSearch({ onSelect, selectedBookIds }: BookSearchProps) {
       <Stack gap={2} maxHeight='300px' overflowY='auto'>
         {books?.map((book) => (
           <Box
-            key={book.googleBooksId}
+            key={book.id}
             bg={
-              selectedBookIds.includes(book.googleBooksId)
-                ? 'purple.100'
-                : 'whiteAlpha.50'
+              selectedBookIds.includes(book.id) ? 'purple.100' : 'whiteAlpha.50'
             }
             borderRadius='lg'
             cursor='pointer'
-            onClick={() => onSelect(book.googleBooksId)}
+            onClick={() => onSelect(book.id)}
             p={4}
           >
             <Text
               color={
-                selectedBookIds.includes(book.googleBooksId)
-                  ? 'purple.500'
-                  : 'fg.info'
+                selectedBookIds.includes(book.id) ? 'purple.500' : 'fg.info'
               }
               fontWeight='bold'
             >

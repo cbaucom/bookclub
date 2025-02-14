@@ -70,7 +70,7 @@ export interface GoogleBooksResponse {
 }
 
 export interface SearchBook {
-	googleBooksId: string;
+	id: string;
 	title: string;
 	subtitle?: string;
 	author: string;

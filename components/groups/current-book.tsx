@@ -304,7 +304,7 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
                       <FaTrash /> Delete
                     </Button>
                     <DeleteBookDialog
-                      bookId={book.id}
+                      bookId={bookId}
                       groupId={groupId}
                       isOpen={isDeleteDialogOpen}
                       onClose={() => setIsDeleteDialogOpen(false)}
