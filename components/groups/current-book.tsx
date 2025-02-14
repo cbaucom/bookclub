@@ -119,19 +119,15 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
 
   return (
     <Container maxW='container.xl' p={0}>
-      <Box
-        bg={isDark ? 'gray.800' : 'white'}
-        borderRadius='xl'
-        boxShadow='lg'
-        overflow='hidden'
-        p={{ base: 4, md: 8 }}
-      >
-        <Grid
-          templateColumns={{ base: '1fr', md: '350px 1fr' }}
-          gap={{ base: 6, md: 8 }}
-        >
-          {/* Left Column - Book Details */}
-          <VStack align='stretch' gap={6}>
+      {/* Reviews and Notes Section*/}
+      <Box bg={isDark ? 'gray.800' : 'white'} overflow='hidden' py={4}>
+        <VStack align='stretch' gap={8}>
+          {/* Book Image and Info Grid */}
+          <Grid
+            templateColumns={{ base: '1fr', md: '200px 1fr' }}
+            gap={{ base: 6, md: 8 }}
+          >
+            {/* Left Column - Book Image */}
             {book.imageUrl && (
               <Box
                 borderRadius='lg'
@@ -152,6 +148,8 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
                 />
               </Box>
             )}
+
+            {/* Right Column - Book Details */}
             <VStack align={{ base: 'center', md: 'stretch' }} gap={4}>
               <Heading
                 as='h1'
@@ -316,48 +314,9 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
                 )}
               </Flex>
             </VStack>
-          </VStack>
+          </Grid>
 
-          {/* Right Column - Notes and Reviews */}
           <VStack align='stretch' gap={8}>
-            {/* Notes Section */}
-            <Box>
-              <Heading as='h2' size='lg' mb={4}>
-                Notes
-              </Heading>
-              <VStack align='stretch' gap={4}>
-                <Box>
-                  <Textarea
-                    value={noteContent}
-                    onChange={(e) => setNoteContent(e.target.value)}
-                    placeholder='Add a note...'
-                    p={4}
-                    rows={3}
-                    size='lg'
-                  />
-                  <Button
-                    mt={2}
-                    colorPalette='purple'
-                    onClick={handleAddNote}
-                    disabled={createMutation.isPending || !noteContent.trim()}
-                    size='xs'
-                  >
-                    {createMutation.isPending ? 'Adding...' : 'Add Note'}
-                  </Button>
-                </Box>
-
-                {book.notes?.map((note: NoteWithUser) => (
-                  <NoteCard
-                    key={note.id}
-                    note={note}
-                    groupId={groupId}
-                    bookId={book.id}
-                    userId={userId}
-                  />
-                ))}
-              </VStack>
-            </Box>
-
             {/* Reviews Section */}
             {ratings && ratings.length > 0 && (
               <Box>
@@ -372,7 +331,45 @@ export function CurrentBook({ groupId }: CurrentBookProps) {
               </Box>
             )}
           </VStack>
-        </Grid>
+        </VStack>
+      </Box>
+
+      {/* Notes Section */}
+      <Box>
+        <Heading as='h2' size='lg' mb={4}>
+          Notes
+        </Heading>
+        <VStack align='stretch' gap={4}>
+          <Box>
+            <Textarea
+              value={noteContent}
+              onChange={(e) => setNoteContent(e.target.value)}
+              placeholder='Add a note...'
+              p={4}
+              rows={3}
+              size='lg'
+            />
+            <Button
+              mt={2}
+              colorPalette='purple'
+              onClick={handleAddNote}
+              disabled={createMutation.isPending || !noteContent.trim()}
+              size='xs'
+            >
+              {createMutation.isPending ? 'Adding...' : 'Add Note'}
+            </Button>
+          </Box>
+
+          {book.notes?.map((note: NoteWithUser) => (
+            <NoteCard
+              key={note.id}
+              note={note}
+              groupId={groupId}
+              bookId={book.id}
+              userId={userId}
+            />
+          ))}
+        </VStack>
       </Box>
 
       <BookDescriptionModal
