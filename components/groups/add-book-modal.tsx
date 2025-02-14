@@ -25,6 +25,7 @@ interface AddBookModalProps {
 
 async function addBook(groupId: string, book: SearchBook, status?: string) {
   const bookData = {
+    googleBooksId: book.googleBooksId,
     id: book.googleBooksId,
     title: book.title,
     author: book.author || 'Unknown Author',
@@ -70,6 +71,8 @@ export function AddBookModal({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['books', groupId] });
       queryClient.invalidateQueries({ queryKey: ['currentBook', groupId] });
+      // Explicitly refetch the current book query
+      queryClient.refetchQueries({ queryKey: ['currentBook', groupId] });
       // Clear the search cache when a book is added
       queryClient.removeQueries({ queryKey: ['books', 'search'] });
       onClose();

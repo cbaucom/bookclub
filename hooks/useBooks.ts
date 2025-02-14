@@ -33,5 +33,9 @@ export function useCurrentBook(groupId: string) {
 		queryKey: ['currentBook', groupId],
 		queryFn: () => getCurrentBook(groupId),
 		enabled: !!groupId,
+		staleTime: 0,
+		gcTime: 0,
+		refetchOnMount: true,
+		refetchOnWindowFocus: true,
 	});
 }
