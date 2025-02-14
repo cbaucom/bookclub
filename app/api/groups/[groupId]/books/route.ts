@@ -135,11 +135,11 @@ export async function POST(
 
 		const data = await request.json();
 
-		const { title, author, description, imageUrl, amazonUrl, status, subtitle, pageCount, categories, textSnippet, googleBooksId } = data;
+		const { title, author, description, imageUrl, amazonUrl, status, subtitle, pageCount, categories, textSnippet, id } = data;
 
-		if (!title || !author) {
+		if (!title || !author || !id) {
 			return NextResponse.json(
-				{ error: 'Title and author are required' },
+				{ error: 'Title, author, and id are required' },
 				{ status: 400 }
 			);
 		}
@@ -154,12 +154,12 @@ export async function POST(
 			);
 		}
 
-		// First, try to find an existing book by Google Books ID or title/author
+		// First, try to find an existing book by ID or title/author
 		const existingBook = await prisma.book.findFirst({
 			where: {
 				OR: [
 					{
-						id: googleBooksId,
+						id,
 					},
 					{
 						AND: {
@@ -195,7 +195,7 @@ export async function POST(
 		// Create or get the book
 		const book = existingBook || await prisma.book.create({
 			data: {
-				id: data.id,
+				id,
 				title: title.trim(),
 				author: author.trim(),
 				description: description?.trim(),
