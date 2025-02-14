@@ -8,6 +8,7 @@ import {
 } from 'react-icons/lu';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useColorModeValue } from '@/components/ui/color-mode';
 
 interface GroupNavProps {
   groupId: string;
@@ -15,6 +16,8 @@ interface GroupNavProps {
 
 export function GroupNav({ groupId }: GroupNavProps) {
   const pathname = usePathname();
+  const bg = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'gray.700');
 
   const sections = [
     {
@@ -56,7 +59,8 @@ export function GroupNav({ groupId }: GroupNavProps) {
       left={0}
       right={0}
       borderTopWidth={1}
-      bg='white'
+      borderColor={borderColor}
+      bg={bg}
       display={{ base: 'block', md: 'none' }}
       px={2}
       py={2}
