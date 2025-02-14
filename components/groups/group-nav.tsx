@@ -18,6 +18,7 @@ export function GroupNav({ groupId }: GroupNavProps) {
   const pathname = usePathname();
   const bg = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const activeBg = useColorModeValue('purple.50', 'purple.900');
 
   const sections = [
     {
@@ -61,28 +62,48 @@ export function GroupNav({ groupId }: GroupNavProps) {
       borderTopWidth={1}
       borderColor={borderColor}
       bg={bg}
-      display={{ base: 'block', md: 'none' }}
+      display={{ base: 'block', md: 'block' }}
       px={2}
       py={2}
       zIndex={10}
     >
-      <Stack direction='row' gap={2} overflowX='auto' pb={2}>
+      <Stack
+        direction='row'
+        gap={2}
+        justify={'space-between'}
+        overflowX='auto'
+        maxW='6xl'
+        mx='auto'
+        pb={2}
+        px={2}
+      >
         {sections.map((section) => (
-          <Link key={section.title} href={section.href} style={{ flex: 1 }}>
-            <Button
-              variant='ghost'
-              size='sm'
-              width='full'
-              colorScheme={pathname === section.href ? 'purple' : 'gray'}
-              display='flex'
-              alignItems='center'
-              justifyContent='flex-start'
-              gap={2}
-            >
-              <Box as={section.icon} />
-              {section.title}
-            </Button>
-          </Link>
+          <Box key={section.title} flex={{ base: 1, md: 'none' }}>
+            <Link href={section.href}>
+              <Button
+                alignItems='center'
+                bg={pathname === section.href ? activeBg : 'transparent'}
+                color={pathname === section.href ? 'purple.500' : undefined}
+                colorPalette='purple'
+                display='flex'
+                fontWeight={pathname === section.href ? 'bold' : 'normal'}
+                gap={2}
+                justifyContent='flex-start'
+                size='sm'
+                variant='ghost'
+                width={{ base: 'full', md: 'auto' }}
+                _hover={{
+                  bg: pathname === section.href ? activeBg : 'purple.50',
+                }}
+              >
+                <Box
+                  as={section.icon}
+                  color={pathname === section.href ? 'purple.500' : 'inherit'}
+                />
+                {section.title}
+              </Button>
+            </Link>
+          </Box>
         ))}
       </Stack>
     </Box>
