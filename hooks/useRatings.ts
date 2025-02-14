@@ -44,6 +44,8 @@ function calculateRatingStats(ratings: Rating[] | undefined, userId: string | nu
 }
 
 async function rateBook(bookId: string, data: RatingData): Promise<void> {
+	if (!bookId) throw new Error('Book ID is required');
+
 	const response = await fetch(`/api/books/${bookId}/ratings`, {
 		method: 'POST',
 		headers: {
@@ -59,6 +61,8 @@ async function rateBook(bookId: string, data: RatingData): Promise<void> {
 }
 
 async function fetchRatings(bookId: string): Promise<Rating[]> {
+	if (!bookId) throw new Error('Book ID is required');
+
 	const response = await fetch(`/api/books/${bookId}/ratings`);
 	if (!response.ok) {
 		throw new Error('Failed to fetch ratings');
@@ -72,6 +76,7 @@ export function useRatings(bookId: string, groupId: string) {
 	const { data: ratings } = useQuery({
 		queryKey: ['ratings', bookId],
 		queryFn: () => fetchRatings(bookId),
+		enabled: !!bookId,
 	});
 
 	const { mutate: rate, isPending } = useMutation({
