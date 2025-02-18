@@ -123,7 +123,7 @@ export default function DiscoverPage() {
             Search Public Groups
           </Heading>
           <Input
-            placeholder='Search groups...'
+            placeholder='Search public groups...'
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             mb={4}

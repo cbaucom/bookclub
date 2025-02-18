@@ -30,20 +30,7 @@ export async function GET(request: Request) {
 						},
 					},
 				],
-				AND: [
-					{
-						OR: [
-							{ privacy: 'PUBLIC' },
-							{
-								members: {
-									some: {
-										userId: user.id,
-									},
-								},
-							},
-						],
-					},
-				],
+				privacy: 'PUBLIC',
 			},
 			include: {
 				members: {
