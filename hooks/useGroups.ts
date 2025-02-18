@@ -8,12 +8,35 @@ export function useGroups() {
 	return useQuery<GroupWithRole[], Error>({
 		queryKey: ['groups', isSignedIn],
 		queryFn: async () => {
-			const response = await fetch('/api/groups');
+			const url = '/api/groups/';
+			console.log('[useGroups] Starting fetch from:', url);
+			console.log('[useGroups] Auth state:', { isLoaded, isSignedIn });
+
+			const response = await fetch(url);
+
 			if (!response.ok) {
 				const error = await response.json();
+				console.error('[useGroups] API error:', {
+					url,
+					status: response.status,
+					statusText: response.statusText,
+					error
+				});
 				throw new Error(error.message || 'Failed to fetch groups');
 			}
-			return response.json();
+
+			const data = await response.json();
+			console.log('[useGroups] Fetched groups:', {
+				url,
+				count: data.length,
+				groups: data.map((g: GroupWithRole) => ({
+					id: g.id,
+					name: g.name,
+					role: g.role,
+					memberCount: g._count?.members
+				}))
+			});
+			return data;
 		},
 		enabled: isLoaded && isSignedIn,
 	});

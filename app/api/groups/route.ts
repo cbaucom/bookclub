@@ -4,20 +4,25 @@ import { getAuthenticatedUser } from '@/lib/auth';
 
 // Fetch all groups
 export async function GET() {
+	console.log('🎯 [GROUPS_GET] Route handler entered - URL:', process.env.VERCEL_URL || 'localhost');
+	console.log('🎯 [GROUPS_GET] Environment:', process.env.NODE_ENV);
 	try {
 		console.log('[GROUPS_GET] Starting request');
 		const user = await getAuthenticatedUser();
-		console.log('[GROUPS_GET] Auth user:', user?.id);
+		console.log('[GROUPS_GET] Auth user details:', {
+			id: user?.id,
+			email: user?.email,
+			clerkId: user?.clerkId
+		});
 
 		if (!user) {
 			console.log('[GROUPS_GET] No authenticated user');
 			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 		}
 
-		console.log('[GROUPS_GET] Fetching memberships for user:', user.id);
+		console.log('[GROUPS_GET] Constructing membership query for user:', user.id);
 
-		// Get all memberships and their associated groups
-		const memberships = await prisma.membership.findMany({
+		const query = {
 			where: {
 				userId: user.id,
 			},
@@ -31,7 +36,7 @@ export async function GET() {
 						},
 						books: {
 							where: {
-								status: 'CURRENT',
+								status: 'CURRENT' as const,
 							},
 							include: {
 								book: true,
@@ -41,7 +46,28 @@ export async function GET() {
 					},
 				},
 			},
-		});
+		};
+
+		console.log('[GROUPS_GET] Membership query:', JSON.stringify(query, null, 2));
+
+		// Get all memberships and their associated groups
+		const memberships = await prisma.membership.findMany(query);
+
+		console.log('[GROUPS_GET] Raw memberships result:', JSON.stringify({
+			query: 'SELECT * FROM Membership WHERE userId = ' + user.id,
+			count: memberships.length,
+			memberships: memberships.map(m => ({
+				userId: m.userId,
+				groupId: m.groupId,
+				role: m.role,
+				group: m.group ? {
+					id: m.group.id,
+					name: m.group.name,
+					memberCount: m.group._count.members,
+					currentBook: m.group.books[0]?.book || null
+				} : null
+			}))
+		}, null, 2));
 
 		console.log('[GROUPS_GET] Found memberships:', memberships.length);
 
