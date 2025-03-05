@@ -72,8 +72,11 @@ export function AddBookModal({
       queryClient.invalidateQueries({ queryKey: ['currentBook', groupId] });
       // Explicitly refetch the current book query
       queryClient.refetchQueries({ queryKey: ['currentBook', groupId] });
-      // Clear the search cache when a book is added
-      queryClient.removeQueries({ queryKey: ['books', 'search'] });
+
+      // Clear all search queries
+      queryClient.invalidateQueries({ queryKey: ['books', 'search'] });
+      queryClient.resetQueries({ queryKey: ['books', 'search'] });
+
       onClose();
       setSearchQuery('');
       toaster.create({
@@ -93,7 +96,18 @@ export function AddBookModal({
   });
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
+    const newQuery = e.target.value;
+
+    // If the query is completely different, clear the cache first
+    if (
+      newQuery.length === 1 ||
+      (searchQuery && !newQuery.startsWith(searchQuery))
+    ) {
+      queryClient.invalidateQueries({ queryKey: ['books', 'search'] });
+      queryClient.resetQueries({ queryKey: ['books', 'search'] });
+    }
+
+    setSearchQuery(newQuery);
   };
 
   const handleAddBook = (book: SearchBook) => {
@@ -102,7 +116,9 @@ export function AddBookModal({
 
   // Clear search results when modal is closed
   const handleClose = () => {
-    queryClient.removeQueries({ queryKey: ['books', 'search'] });
+    // Clear all search queries from the cache
+    queryClient.invalidateQueries({ queryKey: ['books', 'search'] });
+    queryClient.resetQueries({ queryKey: ['books', 'search'] });
     setSearchQuery('');
     onClose();
   };

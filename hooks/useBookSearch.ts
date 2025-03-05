@@ -13,7 +13,18 @@ const logDebug = (message: string, data?: unknown) => {
 async function searchBooks(query: string): Promise<SearchBook[]> {
 	if (!query) return [];
 	logDebug(`Fetching books for query: ${query}`);
-	const response = await fetch(`${BASE_URL}/api/books/search?q=${encodeURIComponent(query)}`);
+
+	// Add a timestamp to prevent browser caching
+	const timestamp = new Date().getTime();
+	const response = await fetch(`${BASE_URL}/api/books/search?q=${encodeURIComponent(query)}&_t=${timestamp}`, {
+		cache: 'no-store',
+		headers: {
+			'Cache-Control': 'no-cache, no-store, must-revalidate',
+			'Pragma': 'no-cache',
+			'Expires': '0'
+		}
+	});
+
 	if (!response.ok) {
 		throw new Error('Failed to search books');
 	}
@@ -37,13 +48,13 @@ export function useBookSearch(query: string) {
 		return () => clearTimeout(timer);
 	}, [query]);
 
-	// Only invalidate the specific query when it changes
+	// Clear previous results when query changes
 	useEffect(() => {
-		// Don't remove queries, just invalidate the current one to trigger a refetch
 		if (debouncedQuery) {
-			logDebug(`Invalidating query for: ${debouncedQuery}`);
+			logDebug(`Clearing previous results for: ${debouncedQuery}`);
+			// Force a refetch by invalidating
 			queryClient.invalidateQueries({
-				queryKey: ['books', 'search', debouncedQuery]
+				queryKey: ['books', 'search']
 			});
 		}
 	}, [debouncedQuery, queryClient]);
@@ -51,6 +62,12 @@ export function useBookSearch(query: string) {
 	return useQuery<SearchBook[], Error>({
 		queryKey: ['books', 'search', debouncedQuery],
 		queryFn: () => searchBooks(debouncedQuery),
-		enabled: Boolean(debouncedQuery)
+		enabled: Boolean(debouncedQuery),
+		staleTime: 0, // Consider data stale immediately
+		gcTime: 0, // Remove from cache immediately when unused
+		refetchOnWindowFocus: true, // Refetch when window regains focus
+		refetchOnMount: true, // Always refetch when component mounts
+		refetchOnReconnect: true, // Refetch when reconnecting
+		retry: 1, // Only retry once if there's an error
 	});
 }

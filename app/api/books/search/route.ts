@@ -17,10 +17,20 @@ export async function GET(request: Request) {
 			return NextResponse.json({ error: 'Query is required' }, { status: 400 });
 		}
 
+		// Add a timestamp to prevent caching
+		const timestamp = new Date().getTime();
 		const response = await fetch(
 			`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
 				query
-			)}&maxResults=15`
+			)}&maxResults=15&_t=${timestamp}`,
+			{
+				cache: 'no-store',
+				headers: {
+					'Cache-Control': 'no-cache, no-store, must-revalidate',
+					'Pragma': 'no-cache',
+					'Expires': '0'
+				}
+			}
 		);
 
 		if (!response.ok) {
@@ -46,7 +56,14 @@ export async function GET(request: Request) {
 			})
 		}) || [];
 
-		return NextResponse.json(books);
+		// Return response with cache control headers
+		return NextResponse.json(books, {
+			headers: {
+				'Cache-Control': 'no-cache, no-store, must-revalidate',
+				'Pragma': 'no-cache',
+				'Expires': '0'
+			}
+		});
 	} catch (error) {
 		console.error('[BOOKS_SEARCH]', error);
 		return NextResponse.json(
