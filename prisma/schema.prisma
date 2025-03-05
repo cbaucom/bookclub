@@ -21,17 +21,17 @@ model User {
   lastName        String?
   username        String?      @unique
   imageUrl        String?
-  groups          Membership[]
-  notes           Note[]
-  comments        Comment[]
-  invitationsSent Invitation[] @relation("invitationsSent")
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
+  comments        Comment[]
+  invitationsSent Invitation[] @relation("invitationsSent")
   Invitation      Invitation[]
+  groups          Membership[]
+  notes           Note[]
+  PollOption      PollOption[]
   ratings         Rating[]
   Reaction        Reaction[]
   Vote            Vote[]
-  PollOption      PollOption[]
 }
 
 model Group {
@@ -52,21 +52,21 @@ model Book {
   title       String
   subtitle    String?
   author      String
-  imageUrl    String?
-  amazonUrl   String?
+  imageUrl    String?       @db.Text
+  amazonUrl   String?       @db.Text
   description String?       @db.Text
   pageCount   Int?
   categories  String?
   textSnippet String?       @db.Text
-  groups      BookInGroup[]
-  notes       Note[]
-  comments    Comment[]
   startDate   DateTime?
   endDate     DateTime?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  ratings     Rating[]
+  groups      BookInGroup[]
+  comments    Comment[]
+  notes       Note[]
   PollOption  PollOption[]
+  ratings     Rating[]
 }
 
 model Membership {
@@ -259,8 +259,8 @@ enum VotingMethod {
 }
 
 enum PollStatus {
-  PENDING // Before start time, can add books
-  ACTIVE // During voting period
-  COMPLETED // After end time
-  CANCELLED // Manually cancelled
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
 }
