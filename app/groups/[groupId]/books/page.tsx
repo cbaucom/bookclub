@@ -41,13 +41,7 @@ export default function BooksPage() {
 
   return (
     <>
-      <Container
-        mx='auto'
-        maxW='6xl'
-        px={{ base: 2, md: 4 }}
-        py={4}
-        pb={{ base: 20, md: 4 }}
-      >
+      <Container mx='auto' maxW='6xl' px={4} py={4}>
         <GroupHeader group={group} />
         <BookList groupId={groupId as string} status='PREVIOUS' />
       </Container>

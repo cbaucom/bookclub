@@ -55,15 +55,15 @@ function BookCard({
   return (
     <>
       <Box
+        bg={isDark ? 'gray.800' : 'white'}
         borderWidth='1px'
         borderRadius='lg'
-        bg={isDark ? 'gray.800' : 'white'}
         boxShadow='sm'
-        _hover={{ boxShadow: 'md' }}
-        transition='all 0.2s'
-        height='100%'
         display='flex'
         flexDirection='column'
+        height='100%'
+        transition='all 0.2s'
+        _hover={{ boxShadow: 'md' }}
       >
         <Link
           href={`/groups/${groupId}/books/${book.id}`}
@@ -71,27 +71,27 @@ function BookCard({
         >
           <Box flex='1' minH={0}>
             <Grid
-              templateColumns={{ base: '80px 1fr', md: '120px 1fr' }}
               gap={4}
+              templateColumns={{ base: '80px 1fr', md: '120px 1fr' }}
             >
               {book.imageUrl && (
                 <Box position='relative'>
                   <Box
-                    position='relative'
                     paddingBottom='150%' // 2:3 aspect ratio
+                    position='relative'
                     width='100%'
                   >
                     <Image
-                      src={book.imageUrl}
                       alt={book.title}
-                      position='absolute'
-                      top={0}
-                      left={0}
-                      width='100%'
-                      height='100%'
-                      objectFit='cover'
-                      borderRightWidth='1px'
                       borderColor={isDark ? 'gray.700' : 'gray.100'}
+                      borderRightWidth='1px'
+                      height='100%'
+                      left={0}
+                      objectFit='cover'
+                      position='absolute'
+                      src={book.imageUrl}
+                      top={0}
+                      width='100%'
                     />
                   </Box>
                 </Box>
@@ -102,9 +102,9 @@ function BookCard({
                     <VStack align='flex-start' gap={1} flex={1}>
                       <Heading
                         as='h3'
-                        size='md'
                         maxW='100%'
                         overflow='hidden'
+                        size='md'
                         textOverflow='ellipsis'
                         css={{
                           display: '-webkit-box',
@@ -127,15 +127,15 @@ function BookCard({
                     </VStack>
                     {isAdmin && (
                       <Button
-                        size='sm'
                         colorPalette='red'
-                        variant='ghost'
+                        flexShrink={0}
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
                           setIsDeleteDialogOpen(true);
                         }}
-                        flexShrink={0}
+                        size='sm'
+                        variant='ghost'
                       >
                         <FaTrash />
                       </Button>
@@ -155,8 +155,8 @@ function BookCard({
                   <Stack gap={1} mt='auto'>
                     {book.startDate && (
                       <Text
-                        fontSize='xs'
                         color={isDark ? 'gray.400' : 'gray.600'}
+                        fontSize='xs'
                       >
                         Started:{' '}
                         {new Date(
@@ -166,8 +166,8 @@ function BookCard({
                     )}
                     {book.endDate && (
                       <Text
-                        fontSize='xs'
                         color={isDark ? 'gray.400' : 'gray.600'}
+                        fontSize='xs'
                       >
                         Finished:{' '}
                         {new Date(
@@ -177,14 +177,14 @@ function BookCard({
                     )}
                     {isAdmin && book.status === 'PREVIOUS' && (
                       <Button
-                        size='xs'
                         colorPalette='blue'
-                        variant='ghost'
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
                           setIsEditDatesModalOpen(true);
                         }}
+                        size='xs'
+                        variant='ghost'
                       >
                         Edit Dates
                       </Button>
@@ -193,6 +193,9 @@ function BookCard({
 
                   {book.amazonUrl && (
                     <Button
+                      color='white'
+                      colorPalette='orange'
+                      mt={2}
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -203,10 +206,7 @@ function BookCard({
                         );
                       }}
                       size='sm'
-                      color='white'
-                      colorPalette='orange'
                       width='fit-content'
-                      mt={2}
                     >
                       <FaAmazon /> View on Amazon
                     </Button>
@@ -219,10 +219,10 @@ function BookCard({
 
         {ratings && ratings.length > 0 && (
           <Box
+            bg={isDark ? 'gray.900' : 'gray.50'}
             borderTopWidth='1px'
             borderColor={isDark ? 'gray.700' : 'gray.100'}
             p={4}
-            bg={isDark ? 'gray.900' : 'gray.50'}
           >
             <Heading as='h4' size='sm' mb={2}>
               Reviews
@@ -239,10 +239,10 @@ function BookCard({
       <EditDatesModal
         bookId={book.id}
         groupId={groupId}
+        initialEndDate={book.endDate}
+        initialStartDate={book.startDate}
         isOpen={isEditDatesModalOpen}
         onClose={() => setIsEditDatesModalOpen(!isEditDatesModalOpen)}
-        initialStartDate={book.startDate}
-        initialEndDate={book.endDate}
       />
 
       <DeleteBookDialog
@@ -294,32 +294,32 @@ export function BookList({ groupId, status }: BookListProps) {
     return (
       <>
         <EmptyState
+          description={emptyStateProps.description}
           icon={emptyStateProps.icon}
           title={emptyStateProps.title}
-          description={emptyStateProps.description}
         >
           <Button
-            mt={4}
             colorPalette='purple'
-            size='sm'
+            mt={4}
             onClick={() => setIsAddBookModalOpen(true)}
+            size='sm'
           >
             {emptyStateProps.icon}
             {emptyStateProps.buttonText}
           </Button>
         </EmptyState>
         <AddBookModal
+          defaultStatus={status}
           groupId={groupId}
           isOpen={isAddBookModalOpen}
           onClose={() => setIsAddBookModalOpen(!isAddBookModalOpen)}
-          defaultStatus={status}
         />
       </>
     );
   }
 
   return (
-    <Box mt={8}>
+    <Box mt={4}>
       <Flex justify='space-between' align='center' mb={6}>
         <Heading as='h3' size='md'>
           {status === 'PREVIOUS'
@@ -343,10 +343,10 @@ export function BookList({ groupId, status }: BookListProps) {
         ))}
       </Grid>
       <AddBookModal
+        defaultStatus={status}
         groupId={groupId}
         isOpen={isAddBookModalOpen}
         onClose={() => setIsAddBookModalOpen(!isAddBookModalOpen)}
-        defaultStatus={status}
       />
     </Box>
   );
