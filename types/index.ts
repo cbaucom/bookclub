@@ -1,6 +1,6 @@
 import { Book, Note, Group, User, Comment, Reaction, PollStatus, VotingMethod, Poll, PollOption as PrismaOption, Vote } from '@prisma/client';
 
-export type UserInfo = Pick<User, 'firstName' | 'lastName' | 'clerkId' | 'imageUrl'>;
+export type UserInfo = Pick<User, 'firstName' | 'lastName' | 'clerkId' | 'imageUrl' | 'username'>;
 
 export interface ReactionWithUser extends Reaction {
 	user: UserInfo;
@@ -115,4 +115,58 @@ export interface PollOption extends PrismaOption {
 
 export interface PollWithOptions extends Poll {
 	options: PollOption[];
+}
+
+export interface MeetingWithResponses {
+	id: string;
+	title: string;
+	description: string | null;
+	location: string | null;
+	address: string | null;
+	date: Date;
+	groupId: string;
+	createdById: string;
+	createdAt: Date;
+	updatedAt: Date;
+	responses: Array<MeetingResponseWithUser>;
+	group: Group;
+	createdBy: UserInfo;
+	_count?: {
+		responses: number;
+	};
+}
+
+export interface MeetingResponseWithUser {
+	id: string;
+	status: 'YES' | 'NO' | 'MAYBE';
+	userId: string;
+	meetingId: string;
+	createdAt: Date;
+	updatedAt: Date;
+	user: UserInfo;
+}
+
+export interface GroupWithMeeting extends GroupWithRole {
+	upcomingMeeting?: MeetingWithResponses | null;
+}
+
+export interface CreateMeetingRequest {
+	title: string;
+	description?: string;
+	location?: string;
+	address?: string;
+	date: string;
+	groupId: string;
+}
+
+export interface UpdateMeetingRequest {
+	title?: string;
+	description?: string;
+	location?: string;
+	address?: string;
+	date?: string;
+}
+
+export interface MeetingResponseRequest {
+	status: 'YES' | 'NO' | 'MAYBE';
 }
