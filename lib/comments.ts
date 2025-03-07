@@ -16,6 +16,7 @@ export async function fetchCommentReplies(commentId: string): Promise<CommentWit
 					firstName: true,
 					imageUrl: true,
 					lastName: true,
+					username: true,
 				},
 			},
 			reactions: {
@@ -26,6 +27,7 @@ export async function fetchCommentReplies(commentId: string): Promise<CommentWit
 							firstName: true,
 							imageUrl: true,
 							lastName: true,
+							username: true,
 						},
 					},
 				},

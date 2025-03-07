@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { CreateMeetingRequest } from '@/types';
@@ -38,8 +38,8 @@ function validateMeetingData(data: CreateMeetingRequest): { valid: boolean; erro
 }
 
 export async function GET(
-	req: NextRequest,
-	{ params }: { params: { groupId: string } }
+	request: Request,
+	context: { params: Promise<{ groupId: string }> }
 ) {
 	try {
 		const user = await getAuthenticatedUser();
@@ -47,7 +47,7 @@ export async function GET(
 			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 		}
 
-		const { groupId } = params;
+		const { groupId } = await context.params;
 
 		// Check if user is a member of the group
 		const membership = await prisma.membership.findUnique({
@@ -116,8 +116,8 @@ export async function GET(
 }
 
 export async function POST(
-	req: NextRequest,
-	{ params }: { params: { groupId: string } }
+	request: Request,
+	context: { params: Promise<{ groupId: string }> }
 ) {
 	try {
 		const user = await getAuthenticatedUser();
@@ -125,8 +125,9 @@ export async function POST(
 			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 		}
 
-		const { groupId } = params;
-		const body = await req.json();
+		const { groupId } = await context.params;
+
+		const body = await request.json();
 
 		// Validate request body
 		const validation = validateMeetingData({ ...body, groupId });

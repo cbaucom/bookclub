@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getAuthenticatedUser } from '@/lib/auth';
 
@@ -104,7 +104,9 @@ export async function GET() {
 }
 
 // Create a new group
-export async function POST(req: Request) {
+export async function POST(
+	request: NextRequest,
+) {
 	try {
 		const user = await getAuthenticatedUser();
 
@@ -112,7 +114,7 @@ export async function POST(req: Request) {
 			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 		}
 
-		const data = await req.json();
+		const data = await request.json();
 
 		// First create the group
 		const newGroup = await prisma.group.create({

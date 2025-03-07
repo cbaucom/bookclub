@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { MeetingResponseRequest } from '@/types';
@@ -20,8 +20,8 @@ function validateResponseData(data: MeetingResponseRequest): { valid: boolean; e
 }
 
 export async function POST(
-	req: NextRequest,
-	{ params }: { params: { groupId: string; meetingId: string } }
+	request: Request,
+	context: { params: Promise<{ groupId: string; meetingId: string }> }
 ) {
 	try {
 		const user = await getAuthenticatedUser();
@@ -29,8 +29,16 @@ export async function POST(
 			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 		}
 
-		const { groupId, meetingId } = params;
-		const body = await req.json();
+		const { groupId, meetingId } = await context.params;
+
+		if (!groupId || !meetingId) {
+			return NextResponse.json(
+				{ error: 'Invalid URL parameters' },
+				{ status: 400 }
+			);
+		}
+
+		const body = await request.json();
 
 		// Validate request body
 		const validation = validateResponseData(body);

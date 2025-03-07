@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { UpdateMeetingRequest } from '@/types';
@@ -38,8 +38,8 @@ function validateUpdateData(data: Record<string, unknown>): { valid: boolean; er
 }
 
 export async function GET(
-	req: NextRequest,
-	{ params }: { params: { groupId: string; meetingId: string } }
+	request: Request,
+	context: { params: Promise<{ groupId: string; meetingId: string }> }
 ) {
 	try {
 		const user = await getAuthenticatedUser();
@@ -47,7 +47,14 @@ export async function GET(
 			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 		}
 
-		const { groupId, meetingId } = params;
+		const { groupId, meetingId } = await context.params;
+
+		if (!groupId || !meetingId) {
+			return NextResponse.json(
+				{ error: 'Invalid URL parameters' },
+				{ status: 400 }
+			);
+		}
 
 		// Check if user is a member of the group
 		const membership = await prisma.membership.findUnique({
@@ -121,8 +128,8 @@ export async function GET(
 }
 
 export async function PUT(
-	req: NextRequest,
-	{ params }: { params: { groupId: string; meetingId: string } }
+	request: Request,
+	context: { params: Promise<{ groupId: string; meetingId: string }> }
 ) {
 	try {
 		const user = await getAuthenticatedUser();
@@ -130,8 +137,16 @@ export async function PUT(
 			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 		}
 
-		const { groupId, meetingId } = params;
-		const body = await req.json();
+		const { groupId, meetingId } = await context.params;
+
+		if (!groupId || !meetingId) {
+			return NextResponse.json(
+				{ error: 'Invalid URL parameters' },
+				{ status: 400 }
+			);
+		}
+
+		const body = await request.json();
 
 		// Validate request body
 		const validation = validateUpdateData(body);
@@ -220,8 +235,8 @@ export async function PUT(
 }
 
 export async function DELETE(
-	req: NextRequest,
-	{ params }: { params: { groupId: string; meetingId: string } }
+	request: Request,
+	context: { params: Promise<{ groupId: string; meetingId: string }> }
 ) {
 	try {
 		const user = await getAuthenticatedUser();
@@ -229,7 +244,14 @@ export async function DELETE(
 			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 		}
 
-		const { groupId, meetingId } = params;
+		const { groupId, meetingId } = await context.params;
+
+		if (!groupId || !meetingId) {
+			return NextResponse.json(
+				{ error: 'Invalid URL parameters' },
+				{ status: 400 }
+			);
+		}
 
 		// Check if user is an admin of the group
 		const membership = await prisma.membership.findUnique({
