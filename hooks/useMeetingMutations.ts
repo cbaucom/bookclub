@@ -86,9 +86,28 @@ export function useMeetingMutations(groupId: string) {
 				throw new Error(error.error || 'Failed to respond to meeting');
 			}
 
-			return response.json();
+			const data = await response.json();
+			return data;
 		},
-		onSuccess: (_, variables) => {
+		onMutate: async ({ meetingId }) => {
+			// Cancel any outgoing refetches
+			await queryClient.cancelQueries({ queryKey: ['meetings', groupId] });
+			await queryClient.cancelQueries({ queryKey: ['meetings', groupId, meetingId] });
+			await queryClient.cancelQueries({ queryKey: ['upcomingMeeting', groupId] });
+
+			// Snapshot the previous value
+			const previousMeeting = queryClient.getQueryData(['meetings', groupId, meetingId]);
+
+			return { previousMeeting };
+		},
+		onError: (err, variables, context) => {
+			// If the mutation fails, use the context returned from onMutate to roll back
+			if (context?.previousMeeting) {
+				queryClient.setQueryData(['meetings', groupId, variables.meetingId], context.previousMeeting);
+			}
+		},
+		onSettled: (_, __, variables) => {
+			// Always refetch after error or success to ensure we have the latest data
 			queryClient.invalidateQueries({ queryKey: ['meetings', groupId] });
 			queryClient.invalidateQueries({ queryKey: ['meetings', groupId, variables.meetingId] });
 			queryClient.invalidateQueries({ queryKey: ['upcomingMeeting', groupId] });
