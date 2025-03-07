@@ -10,12 +10,13 @@ import { useAuth } from '@clerk/nextjs';
 import { SignInButton } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { CreateGroupDialog } from '@/components/groups/create-group-dialog';
-import { FaBook, FaLock, FaUsers } from 'react-icons/fa';
+import { FaBook, FaCalendar, FaLock, FaUsers } from 'react-icons/fa';
 import { LuUsers } from 'react-icons/lu';
 import { useTheme } from 'next-themes';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
+import { format } from 'date-fns';
 
 export default function GroupDashboardPage() {
   const queryClient = useQueryClient();
@@ -180,6 +181,28 @@ export default function GroupDashboardPage() {
                         </>
                       ) : null}
                     </Flex>
+
+                    {group.upcomingMeeting && (
+                      <Flex align='center' gap={2} minH='24px'>
+                        <Box color={isDark ? 'gray.400' : 'gray.500'}>
+                          <FaCalendar />
+                        </Box>
+                        <Text
+                          fontSize='sm'
+                          color='fg.muted'
+                          maxW='200px'
+                          overflow='hidden'
+                          textOverflow='ellipsis'
+                          whiteSpace='nowrap'
+                        >
+                          Meeting:{' '}
+                          {format(
+                            new Date(group.upcomingMeeting.date),
+                            'MMM d, h:mm a'
+                          )}
+                        </Text>
+                      </Flex>
+                    )}
 
                     <Text
                       fontSize='sm'

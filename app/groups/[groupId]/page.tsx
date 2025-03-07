@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import {
   Container,
@@ -9,6 +9,8 @@ import {
   Heading,
   Text,
   Stack,
+  Button,
+  Flex,
 } from '@chakra-ui/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { GroupHeader } from '@/components/groups/group-header';
@@ -16,11 +18,23 @@ import { useGroup } from '@/hooks/useGroup';
 import { PageState } from '@/components/ui/page-state';
 import Link from 'next/link';
 import { LuBook, LuBookOpen, LuUsers, LuVote } from 'react-icons/lu';
+import { FaCalendarPlus } from 'react-icons/fa';
+import { useUpcomingMeeting } from '@/hooks/useMeetings';
+import { UpcomingMeeting } from '@/components/meetings/upcoming-meeting';
+import { MeetingDialog } from '@/components/meetings/meeting-dialog';
 
 export default function GroupPage() {
   const queryClient = useQueryClient();
   const { groupId } = useParams();
   const { data: group, isLoading, error } = useGroup(groupId as string);
+  const { data: upcomingMeeting } = useUpcomingMeeting(groupId as string);
+  const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
+
+  const isAdmin = group?.role === 'ADMIN';
+
+  const handleCreateMeeting = () => {
+    setIsMeetingModalOpen(true);
+  };
 
   useEffect(() => {
     const handleFocus = () => {
@@ -77,6 +91,30 @@ export default function GroupPage() {
     <Container mx='auto' maxW='6xl' p={4}>
       <GroupHeader group={group} />
 
+      {/* Upcoming meeting section */}
+      {upcomingMeeting ? (
+        <Box mt={6} mb={6}>
+          <Flex justify='space-between' align='center' mb={2}>
+            <Heading size='md'>Upcoming Meeting</Heading>
+          </Flex>
+          <UpcomingMeeting meeting={upcomingMeeting} groupId={group.id} />
+        </Box>
+      ) : isAdmin ? (
+        <Box mt={6} mb={6}>
+          <Flex justify='space-between' align='center' mb={2}>
+            <Heading size='md'>No Upcoming Meetings</Heading>
+            <Button
+              size='sm'
+              onClick={handleCreateMeeting}
+              colorPalette='purple'
+            >
+              <Box as={FaCalendarPlus} mr={2} />
+              Schedule Meeting
+            </Button>
+          </Flex>
+        </Box>
+      ) : null}
+
       <SimpleGrid columns={{ base: 1, md: 2 }} gap={4} mt={4}>
         {sections.map((section) => (
           <Link key={section.title} href={section.href}>
@@ -98,6 +136,13 @@ export default function GroupPage() {
           </Link>
         ))}
       </SimpleGrid>
+
+      {/* Meeting Dialog */}
+      <MeetingDialog
+        groupId={group.id}
+        isOpen={isMeetingModalOpen}
+        onClose={() => setIsMeetingModalOpen(false)}
+      />
     </Container>
   );
 }
