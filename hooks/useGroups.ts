@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import type { GroupWithRole } from '@/types';
+import { GroupWithMeeting, MeetingWithResponses } from '@/types';
 import { useAuth } from '@clerk/nextjs';
 
 export function useGroups() {
 	const { isLoaded, isSignedIn } = useAuth();
 
-	return useQuery<GroupWithRole[], Error>({
-		queryKey: ['groups', isSignedIn],
+	return useQuery<GroupWithMeeting[]>({
+		queryKey: ['groups'],
 		queryFn: async () => {
 			const url = '/api/groups/';
 			console.log('[useGroups] Starting fetch from:', url);
@@ -29,14 +29,52 @@ export function useGroups() {
 			console.log('[useGroups] Fetched groups:', {
 				url,
 				count: data.length,
-				groups: data.map((g: GroupWithRole) => ({
+				groups: data.map((g: GroupWithMeeting) => ({
 					id: g.id,
 					name: g.name,
 					role: g.role,
 					memberCount: g._count?.members
 				}))
 			});
-			return data;
+
+			// Fetch upcoming meetings for each group
+			const groupsWithMeetings = await Promise.all(
+				data.map(async (group: GroupWithMeeting) => {
+					try {
+						const meetingsResponse = await fetch(`/api/groups/${group.id}/meetings`);
+						if (meetingsResponse.ok) {
+							const meetings = await meetingsResponse.json();
+
+							// Filter for future meetings and sort by date
+							const futureMeetings = meetings.filter(
+								(meeting: MeetingWithResponses) => new Date(meeting.date) > new Date()
+							);
+
+							futureMeetings.sort(
+								(a: MeetingWithResponses, b: MeetingWithResponses) =>
+									new Date(a.date).getTime() - new Date(b.date).getTime()
+							);
+
+							// Add the closest upcoming meeting if any
+							if (futureMeetings.length > 0) {
+								return {
+									...group,
+									upcomingMeeting: futureMeetings[0]
+								};
+							}
+						}
+					} catch (error) {
+						console.error(`Error fetching meetings for group ${group.id}:`, error);
+					}
+
+					return {
+						...group,
+						upcomingMeeting: null
+					};
+				})
+			);
+
+			return groupsWithMeetings;
 		},
 		enabled: isLoaded && isSignedIn,
 	});
