@@ -41,13 +41,7 @@ export default function MembersPage() {
 
   return (
     <>
-      <Container
-        mx='auto'
-        maxW='6xl'
-        px={{ base: 2, md: 4 }}
-        py={4}
-        pb={{ base: 20, md: 4 }}
-      >
+      <Container mx='auto' maxW='6xl' mb={24} px={4} py={4}>
         <GroupHeader group={group} />
         <MemberList groupId={groupId as string} />
       </Container>
