@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { UpdateMeetingRequest } from '@/types';
+import { parseISO } from 'date-fns';
 
 // Simple validation function for meeting updates
 function validateUpdateData(data: Record<string, unknown>): { valid: boolean; errors?: string[] } {
@@ -205,8 +206,9 @@ export async function PUT(
 		if (data.location !== undefined) updateData.location = data.location;
 		if (data.address !== undefined) updateData.address = data.address;
 		if (data.date) {
-			// Append Z to treat the input time as UTC
-			updateData.date = new Date(data.date + 'Z');
+			// Parse the local date string from the form
+			// This will automatically be converted to UTC when stored
+			updateData.date = parseISO(data.date);
 		}
 
 		const updatedMeeting = await prisma.meeting.update({

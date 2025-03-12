@@ -34,7 +34,10 @@ export function MeetingForm({
   const isEditing = !!meeting;
 
   // Format date for input if editing
-  const formatDateForInput = (date: Date) => {
+  const formatDateForInput = (dateString: string) => {
+    // When editing, we need to convert the UTC date back to local time
+    // for the datetime-local input
+    const date = new Date(dateString);
     return format(date, "yyyy-MM-dd'T'HH:mm");
   };
 
@@ -43,7 +46,7 @@ export function MeetingForm({
     description: meeting?.description || '',
     location: meeting?.location || '',
     address: meeting?.address || '',
-    date: meeting ? formatDateForInput(new Date(meeting.date)) : '',
+    date: meeting ? formatDateForInput(meeting.date as unknown as string) : '',
     groupId,
   });
 

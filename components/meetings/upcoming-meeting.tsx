@@ -1,6 +1,6 @@
 import { Box, Flex, Heading, Link as ChakraLink, Text } from '@chakra-ui/react';
 import { Tooltip } from '@/components/ui/tooltip';
-import { formatInTimeZone } from 'date-fns-tz';
+import { format, formatISO } from 'date-fns';
 import {
   FaCalendar,
   FaMapMarkerAlt,
@@ -44,16 +44,19 @@ export function UpcomingMeeting({ meeting, groupId }: UpcomingMeetingProps) {
     : null;
 
   // Format date and time
-  const formattedDate = formatInTimeZone(
-    new Date(meeting.date),
-    Intl.DateTimeFormat().resolvedOptions().timeZone,
-    'EEEE, MMMM d, yyyy'
+  console.log('Meeting date:', meeting.date);
+  console.log(
+    'User timezone:',
+    Intl.DateTimeFormat().resolvedOptions().timeZone
   );
-  const formattedTime = formatInTimeZone(
-    new Date(meeting.date),
-    Intl.DateTimeFormat().resolvedOptions().timeZone,
-    'h:mm a'
-  );
+
+  // The date is stored in UTC and will be automatically converted to local time
+  // when creating a new Date object
+  const meetingDate = new Date(meeting.date);
+  console.log('Parsed date:', formatISO(meetingDate));
+
+  const formattedDate = format(meetingDate, 'EEEE, MMMM d, yyyy');
+  const formattedTime = format(meetingDate, 'h:mm a');
 
   // Group responses by status
   const responsesByStatus = {
