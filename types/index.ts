@@ -157,6 +157,7 @@ export interface CreateMeetingRequest {
 	address?: string;
 	date: string;
 	groupId: string;
+	timeZone?: string;
 }
 
 export interface UpdateMeetingRequest {
@@ -165,6 +166,7 @@ export interface UpdateMeetingRequest {
 	location?: string;
 	address?: string;
 	date?: string;
+	timeZone?: string;
 }
 
 export interface MeetingResponseRequest {

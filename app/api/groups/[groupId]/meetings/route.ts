@@ -170,8 +170,8 @@ export async function POST(
 		// Parse the local date string from the form
 		const localDate = parseISO(data.date);
 
-		// Get the user's timezone
-		const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+		// Use the client's timezone if provided, otherwise fall back to server timezone
+		const timeZone = data.timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 		// Convert from local timezone to UTC
 		// This treats the input date as being in the user's timezone
@@ -179,7 +179,7 @@ export async function POST(
 		const utcDate = fromZonedTime(localDate, timeZone);
 
 		console.log('Original date input:', data.date);
-		console.log('User timezone:', timeZone);
+		console.log('Client timezone:', timeZone);
 		console.log('Converted to UTC:', utcDate.toISOString());
 
 		const meeting = await prisma.meeting.create({

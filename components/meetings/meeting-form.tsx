@@ -34,11 +34,13 @@ export function MeetingForm({
 }: MeetingFormProps) {
   const isEditing = !!meeting;
 
+  // Get the user's timezone
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
   // Format date for input if editing
   const formatDateForInput = (dateString: string) => {
     // When editing, we need to convert the UTC date to local time
     // for the datetime-local input
-    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const date = toZonedTime(new Date(dateString), userTimeZone);
     return format(date, "yyyy-MM-dd'T'HH:mm");
   };
@@ -50,6 +52,7 @@ export function MeetingForm({
     address: meeting?.address || '',
     date: meeting ? formatDateForInput(meeting.date as unknown as string) : '',
     groupId,
+    timeZone: userTimeZone, // Add the timezone to the form data
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -94,7 +97,11 @@ export function MeetingForm({
     e.preventDefault();
 
     if (validateForm()) {
-      onSubmit(formData);
+      // Make sure the timezone is included in the submission
+      onSubmit({
+        ...formData,
+        timeZone: userTimeZone,
+      });
     }
   };
 
