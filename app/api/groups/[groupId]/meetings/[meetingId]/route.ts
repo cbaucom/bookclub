@@ -204,7 +204,10 @@ export async function PUT(
 		if (data.description !== undefined) updateData.description = data.description;
 		if (data.location !== undefined) updateData.location = data.location;
 		if (data.address !== undefined) updateData.address = data.address;
-		if (data.date) updateData.date = new Date(data.date);
+		if (data.date) {
+			// Append Z to treat the input time as UTC
+			updateData.date = new Date(data.date + 'Z');
+		}
 
 		const updatedMeeting = await prisma.meeting.update({
 			where: {

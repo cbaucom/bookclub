@@ -171,7 +171,7 @@ export async function POST(
 				description: data.description,
 				location: data.location,
 				address: data.address,
-				date: new Date(data.date),
+				date: new Date(data.date + 'Z'),
 				groupId,
 				createdById: user.id,
 			},
