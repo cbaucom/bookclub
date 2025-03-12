@@ -3,6 +3,7 @@ import { getAuthenticatedUser } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { CreateMeetingRequest } from '@/types';
 import { parseISO } from 'date-fns';
+import { fromZonedTime } from 'date-fns-tz';
 
 // Simple validation function for meeting creation
 function validateMeetingData(data: CreateMeetingRequest): { valid: boolean; errors?: string[] } {
@@ -169,15 +170,25 @@ export async function POST(
 		// Parse the local date string from the form
 		const localDate = parseISO(data.date);
 
-		// Store the date in UTC format
-		// This will automatically convert from local time to UTC
+		// Get the user's timezone
+		const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+		// Convert from local timezone to UTC
+		// This treats the input date as being in the user's timezone
+		// and converts it to the equivalent UTC time
+		const utcDate = fromZonedTime(localDate, timeZone);
+
+		console.log('Original date input:', data.date);
+		console.log('User timezone:', timeZone);
+		console.log('Converted to UTC:', utcDate.toISOString());
+
 		const meeting = await prisma.meeting.create({
 			data: {
 				title: data.title,
 				description: data.description,
 				location: data.location,
 				address: data.address,
-				date: localDate,
+				date: utcDate,
 				groupId,
 				createdById: user.id,
 			},

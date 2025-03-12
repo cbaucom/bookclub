@@ -15,6 +15,7 @@ import {
   UpdateMeetingRequest,
 } from '@/types';
 import { format } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 
 interface MeetingFormProps {
   groupId: string;
@@ -35,9 +36,10 @@ export function MeetingForm({
 
   // Format date for input if editing
   const formatDateForInput = (dateString: string) => {
-    // When editing, we need to convert the UTC date back to local time
+    // When editing, we need to convert the UTC date to local time
     // for the datetime-local input
-    const date = new Date(dateString);
+    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const date = toZonedTime(new Date(dateString), userTimeZone);
     return format(date, "yyyy-MM-dd'T'HH:mm");
   };
 
